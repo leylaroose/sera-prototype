@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>sera. prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+window.SERA_CONFIG = {
+  tmdbKey: 'c193ba6603809e4926780b4431c45fa8'
+};
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent;scrollbar-width:none;}
+*::-webkit-scrollbar{display:none;}
+@keyframes appIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}
+@keyframes appInUp{from{opacity:0;transform:translateY(16px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.screen-slide-right,.screen-slide-left,.screen-fade{animation:appIn 0.2s ease forwards;}
+.screen-slide-up{animation:appInUp 0.22s ease forwards;}
+html,body{margin:0;padding:0;width:100%;height:100%;background:#0D1210;overflow:hidden;overflow-x:hidden;}
+body{display:flex;justify-content:center;align-items:flex-start;}
+#sera-app{
+  position:relative;
+  width:100%;
+  max-width:430px;
+  height:100vh;
+  height:100dvh;
+  overflow:hidden;
+  background:#1C2120;
+  font-family:'Raleway',sans-serif;
+}
+.sera-screen{display:none;flex-direction:column;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:#1C2120;z-index:1;}
+.sera-screen.active{display:flex;}
+#bottom-nav{z-index:35;}
+#search-overlay{z-index:20;}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(12px,-14px)}}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-1px,1px)}40%{transform:translate(1px,-1px)}60%{transform:translate(-1px,0)}80%{transform:translate(1px,1px)}100%{transform:translate(0,0)}}
+@keyframes logofade{0%,100%{opacity:1}50%{opacity:0.82}}
+@keyframes sageglow{0%,100%{box-shadow:0 8px 24px -8px rgba(92,122,106,0.4),inset 0 1px 0 rgba(240,237,232,0.12)}50%{box-shadow:0 16px 40px -6px rgba(92,122,106,0.65),inset 0 1px 0 rgba(240,237,232,0.18)}}
+@keyframes bookmarkPop{0%{transform:scale(1)}30%{transform:scale(1.45)}65%{transform:scale(0.85)}85%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes reshuffleIn{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideInLeft{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideInUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.slide-in-right{animation:slideInRight 0.28s cubic-bezier(0.25,0.46,0.45,0.94) both;}
+.slide-in-left{animation:slideInLeft 0.28s cubic-bezier(0.25,0.46,0.45,0.94) both;}
+.slide-in-up{animation:slideInUp 0.32s cubic-bezier(0.25,0.46,0.45,0.94) both;}
+.tap-active{opacity:0.7;transform:scale(0.97);transition:opacity 0.1s,transform 0.1s;}
+</style>
+</head>
+<body>
+<div id="sera-app">
+  <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.03;z-index:0;pointer-events:none;animation:grain 0.4s steps(1) infinite;" xmlns="http://www.w3.org/2000/svg"><filter id="gp"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch"></feTurbulence><feColorMatrix type="saturate" values="0"></feColorMatrix></filter><rect width="100%" height="100%" filter="url(#gp)"></rect></svg>
+
+  <!-- ═══ SCREEN 0: DISCLAIMER ═══ -->
+  <div id="s-0" class="sera-screen" style="align-items:center;justify-content:center;padding:40px 32px;">
+    <div style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(92,122,106,0.18) 0%,transparent 70%);filter:blur(20px);animation:drift 20s ease-in-out infinite;pointer-events:none;"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:24px;text-align:center;max-width:300px;position:relative;z-index:2;">
+      <div style="display:flex;flex-direction:column;gap:12px;align-items:center;">
+        <span style="font: 600 26px / 1 Raleway, sans-serif; color: #5C7A6A; letter-spacing: 0.14em; text-transform: uppercase">Attention</span>
+        <p style="margin:0;font:400 16px/1.7 'Raleway',sans-serif;color:rgba(240,237,230,0.6);">This is an early interactive prototype of sera. Some features are simulated, limited, or not yet working and do not reflect the final product.<br><br>Currently only available in English.</p>
+      </div>
+      <div id="start-btn" style="height:44px;padding:0 28px;border-radius:999px;border:1px solid rgba(92,122,106,0.5);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;">
+        <span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.7);letter-spacing:0.04em;position:relative;z-index:2;">Got it, let's go</span>
+        <div id="ripple" style="position:absolute;border-radius:50%;background:rgba(92,122,106,0.35);width:0;height:0;left:50%;top:50%;transform:translate(-50%,-50%);transition:none;pointer-events:none;z-index:1;"></div>
+      </div>
+      <span style="font:400 14px/1.4 'Raleway',sans-serif;color:rgba(240,237,230,0.2);">For research purposes only</span>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN A: SPLASH ═══ -->
+  <div id="s-a" class="sera-screen">
+    <div style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(92,122,106,0.22) 0%,rgba(92,122,106,0.06) 45%,transparent 70%);filter:blur(14px);animation:drift 22s ease-in-out infinite;pointer-events:none;z-index:0;"></div>
+    <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px 28px;gap:14px;">
+      <div style="animation:logofade 7s ease-in-out infinite;text-align:center;">
+        <span data-go="f" style="font:700 84px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.04em;cursor:pointer;">sera</span><span style="font:600 84px/1 'Playfair Display',serif;color:#5C7A6A;">.</span>
+      </div>
+      <span style="font:300 15px/1.6 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.06em;text-align:center;">your shortcut to a good watch</span>
+    </div>
+    <div style="position:relative;z-index:2;padding:0 24px 48px;display:flex;flex-direction:column;gap:11px;flex:none;">
+      <div data-go="c" style="height:54px;border-radius:999px;background:linear-gradient(155deg,#5C7A6A 0%,#3E5C4A 100%);display:flex;align-items:center;justify-content:center;cursor:pointer;animation:sageglow 5s ease-in-out infinite;">
+        <span style="font:600 16px/1 'Raleway',sans-serif;color:#F0EDE8;letter-spacing:0.02em;">Get started</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN B: SIGN UP ═══ -->
+  <div id="s-b" class="sera-screen">
+    <div style="position:absolute;bottom:-50px;right:-50px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(92,122,106,0.22) 0%,transparent 70%);filter:blur(4px);animation:drift 24s ease-in-out infinite;animation-delay:-8s;pointer-events:none;z-index:0;"></div>
+    <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;padding:20px 24px 32px;">
+      <div style="display:flex;align-items:center;margin-bottom:20px;flex:none;">
+        <div data-go="a" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div>
+        <div style="flex:1;text-align:center;"><span style="font:700 20px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.02em;">sera<span style="color:#5C7A6A;">.</span></span></div>
+        <div style="width:34px;"></div>
+      </div>
+      <h2 style="margin:0 0 12px;font:700 46px/1.0 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.03em;flex:none;">Join sera</h2>
+      <p style="margin:0 0 28px;font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);flex:none;">Already have an account? <span data-go="c" style="color:#5C7A6A;cursor:pointer;">Sign in →</span></p>
+      <div data-go="c" style="height:52px;border-radius:16px;background:#252D29;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;flex:none;border:1px solid rgba(240,237,230,0.09);cursor:pointer;">
+        <svg width="15" height="18" viewBox="0 0 375 375" fill="white" xmlns="http://www.w3.org/2000/svg" style="flex:none;display:block;"><path d="M330.4 127.8C328.2 129.5 289.8 151.2 289.8 199.3C289.8 254.9 338.7 274.6 340.2 275.1C340 276.3 332.4 302.1 314.4 328.3C298.4 351.4 281.6 374.5 256.1 374.5C230.6 374.5 224 359.7 194.6 359.7C165.9 359.7 155.7 375 132.4 375C109.1 375 92.8 353.6 74.1 327.3C52.4 296.5 34.9 248.6 34.9 203.2C34.9 130.3 82.3 91.6 128.9 91.6C153.7 91.6 174.4 107.9 189.9 107.9C204.8 107.9 227.9 90.6 256.1 90.6C266.7 90.6 305.1 91.6 330.4 127.8ZM242.7 59.8C254.3 45.9 262.6 26.7 262.6 7.5C262.6 4.9 262.4 2.2 261.9 0C242.9 0.7 220.3 12.6 206.7 28.4C196 40.6 186 59.8 186 79.2C186 82.2 186.5 85.1 186.8 86C187.9 86.3 189.9 86.5 191.9 86.5C208.9 86.5 230.3 75.1 242.7 59.8Z"></path></svg>
+        <span style="font:600 16px/1 'Raleway',sans-serif;color:#F0EDE6;">Continue with Apple</span>
+      </div>
+      <div data-go="c" style="height:52px;border-radius:16px;background:#252D29;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px;flex:none;border:1px solid rgba(240,237,230,0.09);cursor:pointer;">
+        <svg width="18" height="18" viewBox="0 0 375 375" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex:none;display:block;"><path fill="white" d="M352.5 191.4C352.5 179.2 351.4 167.5 349.4 156.3L187.5 156.3L187.5 222.8L280 222.8C275.9 244.2 263.8 262.3 245.5 274.5L245.5 317.8L301.3 317.8C333.8 287.8 352.5 243.8 352.5 191.4Z"></path><path fill="white" d="M187.5 359.4C233.9 359.4 272.8 344.1 301.3 317.8L245.5 274.5C230.2 284.8 210.6 291.1 187.5 291.1C142.8 291.1 104.8 260.9 91.3 220.3L34.1 220.3L34.1 264.7C62.3 320.8 120.3 359.4 187.5 359.4Z"></path><path fill="white" d="M91.3 220.2C87.8 209.8 85.8 198.9 85.8 187.5C85.8 176.1 87.8 165.2 91.3 154.8L91.3 110.5L34.1 110.5C22.3 133.6 15.6 159.7 15.6 187.5C15.6 215.3 22.3 241.4 34.1 264.5L78.6 229.8Z"></path><path fill="white" d="M187.5 84.1C212.8 84.1 235.3 92.8 253.3 109.7L302.5 60.5C272.7 32.7 233.9 15.6 187.5 15.6C120.3 15.6 62.3 54.2 34.1 110.5L91.3 154.8C104.8 114.2 142.8 84.1 187.5 84.1Z"></path></svg>
+        <span style="font:600 16px/1 'Raleway',sans-serif;color:#F0EDE6;">Continue with Google</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;flex:none;">
+        <div style="flex:1;height:1px;background:rgba(240,237,230,0.08);"></div>
+        <span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.45);letter-spacing:0.06em;">or use email</span>
+        <div style="flex:1;height:1px;background:rgba(240,237,230,0.08);"></div>
+      </div>
+      <div style="height:50px;border-radius:12px;background:#252D29;border:1px solid rgba(240,237,230,0.09);display:flex;align-items:center;padding:0 16px;margin-bottom:14px;flex:none;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.3);">Email address</span></div>
+      <div style="height:50px;border-radius:12px;background:#252D29;border:1px solid rgba(240,237,230,0.09);display:flex;align-items:center;padding:0 16px;margin-bottom:20px;flex:none;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.3);">Password</span></div>
+      <div data-go="c" style="height:52px;border-radius:999px;background:linear-gradient(155deg,#5C7A6A 0%,#3E5C4A 100%);display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer;"><span style="font:600 16px/1 'Raleway',sans-serif;color:#F0EDE8;letter-spacing:0.02em;">Create account →</span></div>
+      <div style="flex:1;"></div>
+      <p style="margin:0;font:400 14px/1.5 'Raleway',sans-serif;color:rgba(240,237,230,0.28);text-align:center;flex:none;">By continuing you agree to sera's Terms &amp; Privacy Policy</p>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN C: COUNTRY ═══ -->
+  <div id="s-c" class="sera-screen" style="overflow:hidden;">
+    <div style="height:100%;display:flex;flex-direction:column;padding:20px 24px 0;">
+      <div style="display:flex;align-items:center;margin-bottom:20px;flex:none;">
+        <div data-go="a" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div>
+        <div style="flex:1;text-align:center;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.45);letter-spacing:0.1em;text-transform:uppercase;">Step 1 of 3</span></div>
+        <div style="width:34px;"></div>
+      </div>
+      <h2 style="margin:0 0 8px;font:700 52px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.03em;flex:none;">Where are<br>you based?</h2>
+      <p style="margin:0 0 22px;font:400 14px/1.4 'Raleway',sans-serif;color:rgba(240,237,230,0.55);flex:none;">We'll show what's available to stream in your country.</p>
+      <div style="position:relative;margin-bottom:14px;flex:none;">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="rgba(240,237,230,0.35)" stroke-width="1.4"></circle><path d="M11 11L14 14" stroke="rgba(240,237,230,0.35)" stroke-width="1.4" stroke-linecap="round"></path></svg>
+        <input id="country-search" type="text" placeholder="Search country…" style="width:100%;height:44px;background:#252D29;border:1px solid rgba(240,237,230,0.08);border-radius:12px;padding:0 16px 0 36px;color:#F0EDE6;font:400 16px/1 'Raleway',sans-serif;outline:none;-webkit-appearance:none;" />
+      </div>
+      <div id="country-list" style="flex:1;overflow-y:auto;"></div>
+      <!-- Continue — pinned at bottom, disabled until country selected -->
+      <div style="flex:none;padding:14px 0 32px;background:#1C2120;">
+        <div id="country-continue" style="height:52px;border-radius:999px;background:rgba(92,122,106,0.25);display:flex;align-items:center;justify-content:center;cursor:default;transition:background 0.2s;"><span style="font:600 16px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.3);letter-spacing:0.02em;">Continue →</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN D: SERVICES ═══ -->
+  <div id="s-d" class="sera-screen" style="overflow:hidden;">
+    <div style="height:100%;display:flex;flex-direction:column;padding:20px 24px 0;">
+      <div style="display:flex;align-items:center;margin-bottom:20px;flex:none;">
+        <div data-go="c" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div>
+        <div style="flex:1;text-align:center;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.45);letter-spacing:0.1em;text-transform:uppercase;">Step 2 of 3</span></div>
+        <div style="width:34px;"></div>
+      </div>
+      <h2 style="margin:0 0 8px;font:700 52px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.03em;flex:none;">Platforms.</h2>
+      <p style="margin:0 0 18px;font:400 14px/1.4 'Raleway',sans-serif;color:rgba(240,237,230,0.55);flex:none;">Pick the services you're on — we'll only show what you can actually watch.</p>
+      <!-- scrollable grid — flex:1 wrapper scrolls, inner grid has natural height -->
+      <div style="flex:1;overflow-y:auto;margin:0 -24px;padding:0 24px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-bottom:8px;">
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Netflix</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Disney+</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Prime Video</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Apple TV+</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Paramount+</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Joyn</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">WOW TV</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">ARD Mediathek</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">ZDF Mediathek</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">YouTube</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">RTL+</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">HBO Max</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Rakuten TV</span></div>
+          <div data-service data-service-active="false" style="height:52px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Discovery+</span></div>
+        </div>
+      </div>
+      <!-- Continue always pinned at bottom -->
+      <div style="flex:none;padding:14px 0 32px;background:#1C2120;">
+        <div data-go="e" style="height:52px;border-radius:999px;background:linear-gradient(155deg,#5C7A6A 0%,#3E5C4A 100%);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:600 16px/1 'Raleway',sans-serif;color:#F0EDE8;letter-spacing:0.02em;">Continue →</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN E: SEED PROFILE ═══ -->
+  <div id="s-e" class="sera-screen" style="overflow:hidden;">
+    <div style="height:100%;display:flex;flex-direction:column;padding:20px 24px 0;">
+      <div style="display:flex;align-items:center;margin-bottom:20px;flex:none;">
+        <div data-go="d" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div>
+        <div style="flex:1;text-align:center;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.45);letter-spacing:0.1em;text-transform:uppercase;">Step 3 of 3</span></div>
+        <div style="width:34px;"></div>
+      </div>
+      <h2 style="margin:0 0 6px;font:700 40px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.03em;flex:none;">Tell us what<br>you love.</h2>
+      <p style="margin:0 0 14px;font:400 14px/1.4 'Raleway',sans-serif;color:rgba(240,237,230,0.55);flex:none;">Pick up to 3 shows or films so we can learn your taste.</p>
+      <div style="position:relative;margin-bottom:14px;flex:none;">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="rgba(240,237,230,0.35)" stroke-width="1.4"></circle><path d="M11 11L14 14" stroke="rgba(240,237,230,0.35)" stroke-width="1.4" stroke-linecap="round"></path></svg>
+        <input id="seed-search" type="text" placeholder="Search a show or film…" style="width:100%;height:44px;background:#252D29;border:1px solid rgba(240,237,230,0.08);border-radius:12px;padding:0 16px 0 36px;color:#F0EDE6;font:400 16px/1 'Raleway',sans-serif;outline:none;-webkit-appearance:none;" />
+      </div>
+      <div id="seed-search-results" style="display:none;flex:none;margin-bottom:8px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);overflow:hidden;max-height:200px;overflow-y:auto;"></div>
+      <span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.45);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;flex:none;">Popular picks</span>
+      <!-- scrollable wrapper — flex:1 so it fills space; grid inside has natural height -->
+      <div style="flex:1;overflow-y:auto;margin:0 -24px;padding:0 24px;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding-bottom:4px;" id="seed-grid"></div>
+      </div>
+      <div style="flex:none;padding:14px 0 32px;background:#1C2120;">
+        <div data-go="f" style="height:52px;border-radius:999px;background:linear-gradient(155deg,#5C7A6A 0%,#3E5C4A 100%);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:600 16px/1 'Raleway',sans-serif;color:#F0EDE8;letter-spacing:0.02em;">Continue →</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN F: HOME ═══ -->
+  <div id="s-f" class="sera-screen" style="overflow:hidden;">
+    <div style="position:absolute;top:60px;left:50%;transform:translateX(-50%);width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(110,140,100,0.28) 0%,rgba(92,122,106,0.08) 50%,transparent 70%);filter:blur(18px);animation:drift 22s ease-in-out infinite;pointer-events:none;z-index:0;"></div>
+    <div style="position:relative;z-index:2;height:calc(100% - 76px);display:flex;flex-direction:column;padding:20px 24px 28px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;height:44px;flex:none;">
+        <span style="font:700 26px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.03em;">sera<span style="color:#5C7A6A;">.</span></span>
+        <div data-nav="n" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#5C7A6A,#3E5C4A);border:2px solid rgba(92,122,106,0.7);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 10px rgba(92,122,106,0.35);"><span style="font:700 17px/1 'Playfair Display',serif;color:#F0EDE8;">O</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:18px;gap:4px;min-height:0;">
+        <span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Good evening, Ophelia</span>
+        <h1 style="margin:0;font:700 48px/0.97 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.03em;">What's on<br>tonight?</h1>
+      </div>
+      <div style="display:flex;gap:16px;flex:2;min-height:0;max-height:260px;">
+        <div data-go="g" style="flex:0 0 52%;border-radius:18px;background:linear-gradient(170deg,#5C7A6A 0%,#3E5C4A 100%);padding:18px;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;animation:sageglow 5s ease-in-out infinite;position:relative;overflow:hidden;cursor:pointer;">
+          <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.06);filter:blur(4px);"></div>
+          <span style="font:700 36px/1 'Playfair Display',serif;color:#F0EDE8;">ask<br>sera</span>
+          <span style="font:400 14px/1.3 'Raleway',sans-serif;color:rgba(240,237,232,0.6);">let sera pick your next watch</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:16px;">
+          <div data-go="k" style="flex:1;border-radius:18px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:14px;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;cursor:pointer;"><span style="font:700 24px/1 'Playfair Display',serif;color:#F0EDE6;">Browse</span><span style="font:400 14px/1.3 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">everything</span></div>
+          <div data-go="search-track" style="flex:1;border-radius:18px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:14px;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;cursor:pointer;"><span style="font:700 24px/1 'Playfair Display',serif;color:#F0EDE6;">Track</span><span style="font:400 14px/1.3 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">your watches</span></div>
+        </div>
+      </div>
+      <div data-nav="m" style="margin-top: 16px; border-radius: 18px; background: #F0EDE8; padding: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; flex: none; height: 82px">
+        <div style="display:flex;flex-direction:column;gap:3px;"><span style="font:700 22px/1 'Playfair Display',serif;color:#1A2018;">Friends</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(26,32,24,0.65);">see what they watched</span></div>
+        <div style="display:flex;"><span style="width:28px;height:28px;border-radius:50%;background:#5C7A6A;border:2px solid #F0EDE8;display:flex;align-items:center;justify-content:center;font:600 12px/1 'Raleway',sans-serif;color:#F0EDE8;">L</span><span style="width:28px;height:28px;border-radius:50%;background:#8A9490;border:2px solid #F0EDE8;display:flex;align-items:center;justify-content:center;font:600 12px/1 'Raleway',sans-serif;color:#F0EDE8;margin-left:-9px;">S</span><span style="width:28px;height:28px;border-radius:50%;background:#6A7E74;border:2px solid #F0EDE8;display:flex;align-items:center;justify-content:center;font:600 12px/1 'Raleway',sans-serif;color:#F0EDE8;margin-left:-9px;">N</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN G: FILM OR SERIES ═══ -->
+  <div id="s-g" class="sera-screen">
+    <div style="position:absolute;bottom:-40px;left:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(110,140,100,0.32) 0%,transparent 70%);filter:blur(2px);animation:drift 22s ease-in-out infinite;pointer-events:none;z-index:0;"></div>
+    <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;padding:20px 24px 80px;">
+      <div style="flex:none;"><div data-go="back" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div></div>
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px;flex:none;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.06em;">Step 1 of 2</span><h2 style="margin:0;font:700 54px/0.96 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.03em;">Film or<br>series?</h2></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:24px;">
+        <div data-type="movie" style="width:100%;height:152px;border-radius:18px;background:#252D29;border:1px solid rgba(240,237,230,0.06);display:flex;flex-direction:column;justify-content:flex-end;padding:18px 24px;gap:5px;cursor:pointer;"><span class="type-title" style="font:700 34px/1 'Playfair Display',serif;color:#F0EDE6;">A film</span><span class="type-sub" style="font:400 14px/1.3 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">One story, tonight</span></div>
+        <div data-type="tv" style="width:100%;height:152px;border-radius:18px;background:#252D29;border:1px solid rgba(240,237,230,0.06);display:flex;flex-direction:column;justify-content:flex-end;padding:18px 24px;gap:5px;cursor:pointer;"><span class="type-title" style="font:700 34px/1 'Playfair Display',serif;color:#F0EDE6;">A series</span><span class="type-sub" style="font:400 14px/1.3 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Something to come back to</span></div>
+      </div>
+      <div data-go="random-type" style="height:48px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:400 16px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.65);letter-spacing:0.04em;">Can't decide? Let sera pick for you →</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN H: MOOD ═══ -->
+  <div id="s-h" class="sera-screen">
+    <div style="position:absolute;top:-30px;right:-50px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(110,140,100,0.35) 0%,transparent 70%);filter:blur(2px);animation:drift 17s ease-in-out infinite;pointer-events:none;z-index:0;"></div>
+    <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;padding:20px 24px 80px;">
+      <div style="flex:none;"><div data-go="back" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div></div>
+      <div style="margin-top:32px;display:flex;flex-direction:column;gap:6px;margin-bottom:36px;flex:none;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.38);letter-spacing:0.06em;">Step 2 of 2</span><h2 style="margin:0;font:700 54px/0.96 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.03em;">What's the<br>mood?</h2></div>
+      <div data-mood="similar" style="border-radius:16px;background:linear-gradient(155deg,#5C7A6A 0%,#3E5C4A 100%);padding:20px;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;flex:none;min-height:110px;cursor:pointer;"><span style="font:700 28px/1.05 'Playfair Display',serif;color:#F0EDE8;">Something similar</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,232,0.65);">based on your last watch</span></div>
+      <div style="text-align:center;padding:20px 0 16px;flex:none;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.45);">or</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:24px;row-gap:24px;flex:none;grid-auto-rows:162px;">
+        <div data-mood="cozy" style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:14px;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;cursor:pointer;"><span class="mood-title" style="font:700 28px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.01em;">Cozy &amp;<br>warm</span><span class="mood-sub" style="font:400 14px/1.3 'Raleway',sans-serif;color:rgba(240,237,230,0.38);">warm, familiar</span></div>
+        <div data-mood="laugh" style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:14px;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;cursor:pointer;"><span class="mood-title" style="font:700 28px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.01em;">Need a<br>laugh</span><span class="mood-sub" style="font:400 14px/1.3 'Raleway',sans-serif;color:rgba(240,237,230,0.38);">light &amp; quick</span></div>
+        <div data-mood="cry" style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:14px;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;cursor:pointer;"><span class="mood-title" style="font:700 28px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.01em;">A good<br>cry</span><span class="mood-sub" style="font:400 14px/1.3 'Raleway',sans-serif;color:rgba(240,237,230,0.38);">let it out</span></div>
+        <div data-mood="off" style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:14px;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;cursor:pointer;"><span class="mood-title" style="font:700 28px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.01em;">Brain<br>off</span><span class="mood-sub" style="font:400 14px/1.3 'Raleway',sans-serif;color:rgba(240,237,230,0.38);">zero thinking</span></div>
+      </div>
+      <div data-mood="random" style="height:48px;margin-bottom:4px;margin-top:auto;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:400 16px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.65);letter-spacing:0.04em;">Can't decide? Let sera pick for you →</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN I: SHORTLIST ═══ -->
+  <div id="s-i" class="sera-screen">
+    <div style="flex:1;display:flex;flex-direction:column;padding:20px 24px 88px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex:none;">
+        <div data-go="back" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div>
+        <div data-go="reshuffle" style="display:flex;align-items:center;gap:7px;height:38px;padding:0 16px;border-radius:999px;background:#252D29;border:1px solid rgba(240,237,230,0.1);cursor:pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.55)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Reshuffle</span></div>
+      </div>
+      <div style="margin-bottom:14px;flex:none;">
+        <span id="shortlist-type-label" style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.5);"></span>
+        <h1 style="margin:4px 0 0;font:700 44px/1.0 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.03em;">Your shortlist</h1>
+      </div>
+      <div style="border-radius:18px;background:#F0EDE8;overflow:hidden;box-shadow:0 8px 28px -8px rgba(0,0,0,0.35);margin-bottom:20px;flex:none;">
+        <div style="padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between;">
+          <div id="shortlist-hero-badge" style="height:24px;padding:0 10px;border-radius:6px;background:#3E5C4A;display:inline-flex;align-items:center;"><span style="font:600 12px/1 'Raleway',sans-serif;color:#F0EDE8;letter-spacing:0.12em;text-transform:uppercase;">TOP PICK</span></div>
+          <span id="shortlist-hero-meta" style="font:400 14px/1 'Raleway',sans-serif;color:rgba(26,32,24,0.5);"></span>
+        </div>
+        <div id="shortlist-hero-area" style="padding:14px 16px 18px;display:flex;gap:14px;align-items:flex-start;cursor:pointer;">
+          <div id="shortlist-hero-placeholder" style="flex:none;width:110px;height:154px;border-radius:10px;background:rgba(26,32,24,0.1);display:flex;align-items:center;justify-content:center;"><div style="width:24px;height:24px;border-radius:50%;border:2px solid rgba(26,32,24,0.12);border-top-color:rgba(26,32,24,0.4);animation:spin 1s linear infinite;"></div></div>
+          <img id="shortlist-hero-img" style="display:none;flex:none;width:110px;height:154px;border-radius:10px;object-fit:cover;box-shadow:0 4px 14px -4px rgba(0,0,0,0.2);" alt="">
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px;padding-top:2px;">
+            <h3 id="shortlist-hero-title" style="margin:0;font:700 28px/1.0 'Playfair Display',serif;color:#1A2018;letter-spacing:-0.02em;">Loading…</h3>
+            <p id="shortlist-hero-desc" style="margin:0;font:400 14px/1.5 'Raleway',sans-serif;color:rgba(26,32,24,0.6);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;"></p>
+            <div id="shortlist-hero-friends" style="display:flex;align-items:center;gap:7px;"></div>
+            <div onclick="event.stopPropagation();" style="margin-top:2px;"><div style="height:38px;padding:0 16px;border-radius:999px;background:#3E5C4A;display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F0EDE8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg><span style="font:600 14px/1 'Raleway',sans-serif;color:#F0EDE8;">Watch on TV</span></div></div>
+          </div>
+        </div>
+      </div>
+      <div id="shortlist-items" style="display:flex;flex-direction:column;"><div style="display:flex;justify-content:center;padding:28px 0;"><div style="width:24px;height:24px;border-radius:50%;border:2px solid rgba(240,237,230,0.1);border-top-color:#5C7A6A;animation:spin 1s linear infinite;"></div></div></div>
+
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN J: LOG AND RATE ═══ -->
+  <div id="s-j" class="sera-screen">
+    <div style="padding:20px 24px 100px;display:flex;flex-direction:column;">
+
+        <!-- Header: back button + title -->
+        <div style="display:flex;align-items:center;margin-bottom:20px;">
+          <div data-go="back" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div>
+          <h1 style="margin:0 0 0 14px;font:700 28px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.02em;">Leave a Review</h1>
+        </div>
+
+        <!-- You watched card -->
+        <div style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:16px;display:flex;gap:14px;align-items:flex-start;margin-bottom:22px;">
+          <div id="j-poster-placeholder" style="flex:none;width:70px;height:105px;border-radius:8px;background:#1C2120;display:flex;align-items:center;justify-content:center;"><div style="width:20px;height:20px;border-radius:50%;border:2px solid rgba(240,237,230,0.1);border-top-color:#5C7A6A;animation:spin 1s linear infinite;"></div></div>
+          <img id="j-poster" style="display:none;flex:none;width:70px;height:105px;border-radius:8px;object-fit:cover;" alt="">
+          <div style="flex:1;display:flex;flex-direction:column;gap:5px;">
+            <span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.1em;text-transform:uppercase;">You watched</span>
+            <h3 id="j-title" style="margin:0;font:700 20px/1.1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.02em;">Select a title</h3>
+            <span id="j-year" style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.5);"></span>
+            <span id="j-desc" style="font:400 14px/1.5 'Raleway',sans-serif;color:rgba(240,237,230,0.4);margin-top:3px;display:none;overflow:hidden;"></span>
+          </div>
+        </div>
+
+        <!-- How was it? + star rating -->
+        <h2 style="margin:0 0 14px;font:700 22px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.02em;">How was it?</h2>
+        <div style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:16px 12px;margin-bottom:22px;">
+          <div id="star-rating" style="display:flex;justify-content:space-between;gap:4px;">
+            <div data-star="1" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:4px 0;">
+              <span style="font:400 26px/1 serif;color:rgba(240,237,230,0.22);">★</span>
+              <span style="font:600 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.35);letter-spacing:0.08em;text-transform:uppercase;">Awful</span>
+              
+            </div>
+            <div data-star="2" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:4px 0;">
+              <span style="font:400 26px/1 serif;color:rgba(240,237,230,0.22);">★</span>
+              <span style="font:600 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.35);letter-spacing:0.08em;text-transform:uppercase;">OK</span>
+              
+            </div>
+            <div data-star="3" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:4px 0;">
+              <span style="font:400 26px/1 serif;color:rgba(240,237,230,0.22);">★</span>
+              <span style="font:600 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.35);letter-spacing:0.08em;text-transform:uppercase;">Good</span>
+              
+            </div>
+            <div data-star="4" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:4px 0;">
+              <span style="font:400 26px/1 serif;color:rgba(240,237,230,0.22);">★</span>
+              <span style="font:600 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.35);letter-spacing:0.08em;text-transform:uppercase;">Great</span>
+              
+            </div>
+            <div data-star="5" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:4px 0;">
+              <span style="font:400 26px/1 serif;color:rgba(240,237,230,0.22);">★</span>
+              <span style="font:600 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.35);letter-spacing:0.08em;text-transform:uppercase;">Wow</span>
+              
+            </div>
+          </div>
+        </div>
+
+        <!-- Comments -->
+        <h2 style="margin:0 0 12px;font:700 22px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.02em;">Comments</h2>
+        <textarea placeholder="What made it land?" style="height:90px;background:#252D29;border:1px solid rgba(240,237,230,0.08);border-radius:14px;padding:14px 16px;color:#F0EDE6;font:400 16px/1.5 'Raleway',sans-serif;outline:none;resize:none;margin-bottom:22px;width:100%;box-sizing:border-box;"></textarea>
+
+        <!-- Friends who saw it too -->
+        <span style="font:700 16px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.7);letter-spacing:0.01em;margin-bottom:12px;display:block;">Friends who saw it too</span>
+        <div style="display:flex;flex-direction:column;gap:0;margin-bottom:22px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(240,237,230,0.05);">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#5C7A6A,#3E5C4A);display:flex;align-items:center;justify-content:center;flex:none;"><span style="font:600 14px/1 'Raleway',sans-serif;color:#F0EDE8;">L</span></div>
+              <span style="font:500 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Liv</span>
+            </div>
+            <span style="font:400 16px/1 serif;color:#779F8A;letter-spacing:2px;">★★★★★</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:#3A3F3C;display:flex;align-items:center;justify-content:center;flex:none;"><span style="font:600 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.7);">T</span></div>
+              <span style="font:500 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Theo</span>
+            </div>
+            <span style="font:400 16px/1 serif;letter-spacing:2px;"><span style="color:#779F8A;">★★★</span><span style="color:rgba(240,237,230,0.2);">★★</span></span>
+          </div>
+        </div>
+
+        <!-- Optional toggles -->
+        <span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;display:block;">Optional</span>
+        <div style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);overflow:hidden;margin-bottom:24px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(240,237,230,0.05);">
+            <span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.75);">Contains spoiler</span>
+            <div data-toggle="spoiler" data-on="false" style="width:44px;height:26px;border-radius:999px;background:#3A3F3C;position:relative;cursor:pointer;transition:background 0.2s;"><div style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F0EDE6;transition:transform 0.2s;"></div></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(240,237,230,0.05);">
+            <span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.75);">Rewatched</span>
+            <div data-toggle="rewatch" data-on="false" style="width:44px;height:26px;border-radius:999px;background:#3A3F3C;position:relative;cursor:pointer;transition:background 0.2s;"><div style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F0EDE6;transition:transform 0.2s;"></div></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;">
+            <span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.75);">Allow comments</span>
+            <div data-toggle="comments" data-on="true" style="width:44px;height:26px;border-radius:999px;background:#5C7A6A;position:relative;cursor:pointer;transition:background 0.2s;"><div style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F0EDE8;transition:transform 0.2s;transform:translateX(18px);"></div></div>
+          </div>
+        </div>
+
+        <!-- Submit button -->
+        <div data-go="l" style="height:52px;border-radius:999px;background:linear-gradient(155deg,#5C7A6A 0%,#3E5C4A 100%);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:600 16px/1 'Raleway',sans-serif;color:#F0EDE8;letter-spacing:0.04em;">Submit</span></div>
+
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN K: BROWSE ═══ -->
+  <div id="s-k" class="sera-screen">
+    <div style="flex:1;display:flex;flex-direction:column;padding:20px 24px 88px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex:none;">
+        <div data-go="back" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div><h1 style="margin:0;flex:1;text-align:center;font:700 32px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.02em;">Browse</h1>
+        <div style="height:34px;width:130px;flex:none;background:#252D29;border-radius:10px;border:1px solid rgba(240,237,230,0.08);display:flex;padding:3px;gap:2px;">
+          <div id="browse-type-film" data-browse-type="movie" style="flex:1;height:28px;border-radius:8px;background:#5C7A6A;display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:600 12px/1 'Raleway',sans-serif;color:#F0EDE8;">Films</span></div>
+          <div id="browse-type-tv" data-browse-type="tv" style="flex:1;height:28px;border-radius:8px;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.45);">Series</span></div>
+        </div>
+      </div>
+      <div style="position:relative;margin-bottom:14px;flex:none;">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="rgba(240,237,230,0.35)" stroke-width="1.4"></circle><path d="M11 11L14 14" stroke="rgba(240,237,230,0.35)" stroke-width="1.4" stroke-linecap="round"></path></svg>
+        <input id="browse-search" type="text" placeholder="Search title, director, actor…" style="width:100%;height:42px;background:#252D29;border:1px solid rgba(240,237,230,0.08);border-radius:12px;padding:0 40px 0 36px;color:#F0EDE6;font:400 16px/1 'Raleway',sans-serif;outline:none;-webkit-appearance:none;" />
+        <div id="browse-search-x" onclick="document.getElementById('browse-search').value='';document.getElementById('browse-discover').style.display='';document.getElementById('browse-search-mode').style.display='none';this.style.display='none';document.getElementById('browse-search-list').innerHTML='';" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;background:rgba(240,237,230,0.12);display:none;align-items:center;justify-content:center;cursor:pointer;font:400 14px/1 sans-serif;color:rgba(240,237,230,0.6);">✕</div>
+      </div>
+      <div id="browse-discover">
+        <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;">
+          <div data-browse-mood="cozy" style="height:34px;border-radius:999px;padding:0 16px;display:flex;align-items:center;cursor:pointer;background:#5C7A6A;border:1px solid transparent;flex:none;"><span style="font:500 14px/1 'Raleway',sans-serif;color:#F0EDE8;white-space:nowrap;">Cozy</span></div>
+          <div data-browse-mood="laugh" style="height:34px;border-radius:999px;padding:0 16px;display:flex;align-items:center;cursor:pointer;background:transparent;border:1px solid rgba(240,237,230,0.15);flex:none;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);white-space:nowrap;">Funny</span></div>
+          <div data-browse-mood="cry" style="height:34px;border-radius:999px;padding:0 16px;display:flex;align-items:center;cursor:pointer;background:transparent;border:1px solid rgba(240,237,230,0.15);flex:none;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);white-space:nowrap;">Romantic</span></div>
+          <div data-browse-mood="off" style="height:34px;border-radius:999px;padding:0 16px;display:flex;align-items:center;cursor:pointer;background:transparent;border:1px solid rgba(240,237,230,0.15);flex:none;"><span style="font:500 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);white-space:nowrap;">Dark</span></div>
+        </div>
+        <span style="font:700 18px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.01em;margin-bottom:12px;display:block;">Trending in Germany</span>
+        <div id="browse-top-row" style="display:flex;gap:12px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;"><div style="display:flex;justify-content:center;padding:40px 0;width:100%;"><div style="width:24px;height:24px;border-radius:50%;border:2px solid rgba(240,237,230,0.1);border-top-color:#5C7A6A;animation:spin 1s linear infinite;"></div></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.12em;text-transform:uppercase;">This week's chart</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);">Full chart →</span></div>
+        <div id="browse-chart" style="display:flex;flex-direction:column;"></div>
+      </div>
+      <div id="browse-search-mode" style="display:none;flex-direction:column;">
+        <div id="browse-search-list" style="display:flex;flex-direction:column;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN L: TITLE DETAIL ═══ -->
+  <div id="s-l" class="sera-screen">
+    <div id="detail-backdrop" style="position:relative;height:240px;background:#252D29;overflow:hidden;flex:none;background-size:cover;background-position:center top;">
+      <div style="position:absolute;bottom:0;left:0;right:0;height:130px;background:linear-gradient(to bottom,transparent 0%,#1C2120 100%);z-index:1;"></div>
+      <div style="position:absolute;top:16px;left:16px;z-index:5;"><div data-go="back" style="width:34px;height:34px;border-radius:10px;background:rgba(28,33,32,0.75);backdrop-filter:blur(8px);border:1px solid rgba(240,237,230,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font:300 18px/1 'Raleway',sans-serif;color:#F0EDE6;">←</span></div></div>
+    </div>
+    <div style="padding:4px 24px 24px;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <h1 id="detail-title" style="margin:0;font:700 34px/1.0 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.03em;">Loading…</h1>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span id="detail-year" style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);"></span><span style="color:rgba(240,237,230,0.2);">·</span><span id="detail-type" style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);"></span><span style="color:rgba(240,237,230,0.2);">·</span><span id="detail-rating" style="font:500 12px/1 'Raleway',sans-serif;color:#779F8A;"></span></div>
+        <div id="detail-genres" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;"></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div data-go="j" style="flex:1;height:48px;border-radius:999px;background:#252D29;border:1px solid rgba(92,122,106,0.35);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.8)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg><span style="font:600 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.85);">Leave a Review</span></div>
+        <div id="bookmark-btn" data-watchlist style="width:48px;height:48px;border-radius:50%;background:#252D29;border:1px solid rgba(240,237,230,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:background 0.25s,border-color 0.25s;"><svg id="bookmark-svg" width="16" height="19" viewBox="0 0 16 20" fill="none"><path d="M2 2H14V18L8 13.5L2 18V2Z" stroke="rgba(240,237,230,0.65)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"></path></svg></div>
+      </div>
+      <p id="detail-overview" style="margin:0;font:400 14px/1.6 'Raleway',sans-serif;color:rgba(240,237,230,0.7);"></p>
+      <div><span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.12em;text-transform:uppercase;display:block;margin-bottom:12px;">Cast</span><div id="detail-cast" style="display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;"></div></div>
+      <div><span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.12em;text-transform:uppercase;display:block;margin-bottom:10px;">Where to watch</span><div id="detail-streaming" style="display:flex;gap:8px;flex-wrap:wrap;"></div></div>
+      <div><span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.12em;text-transform:uppercase;display:block;margin-bottom:10px;">Friend ratings</span>
+        <div style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div style="display:flex;align-items:center;gap:10px;"><div style="width:30px;height:30px;border-radius:50%;background:#5C7A6A;display:flex;align-items:center;justify-content:center;flex:none;"><span style="font:600 12px/1 'Raleway',sans-serif;color:#F0EDE8;">L</span></div><div><span style="font:600 14px/1 'Raleway',sans-serif;color:#F0EDE6;display:block;margin-bottom:3px;">Liv</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.45);">"Couldn't breathe. Unmissable."</span></div></div><span style="font:400 14px/1;color:#779F8A;flex:none;">★★★★★</span></div>
+        <div style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;"><div style="width:30px;height:30px;border-radius:50%;background:#6A7E74;display:flex;align-items:center;justify-content:center;flex:none;"><span style="font:600 12px/1 'Raleway',sans-serif;color:#F0EDE8;">T</span></div><div><span style="font:600 14px/1 'Raleway',sans-serif;color:#F0EDE6;display:block;margin-bottom:3px;">Theo</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.45);">"Watch it immediately."</span></div></div><span style="font:400 14px/1;color:#779F8A;flex:none;">★★★★</span></div>
+      </div>
+      <div id="detail-series-section" style="display:none;"><span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.12em;text-transform:uppercase;display:block;margin-bottom:10px;">Episodes</span><div id="season-tabs" style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;"></div><div id="episodes-list" style="display:flex;flex-direction:column;"></div></div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN W: WATCHLIST ═══ -->
+  <div id="s-w" class="sera-screen">
+    <div style="flex:1;display:flex;flex-direction:column;padding:20px 24px 88px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex:none;">
+        <div data-go="back" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div><h1 style="margin:0;flex:1;text-align:center;font:700 32px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.02em;">Watchlist</h1>
+        <div style="height:30px;padding:0 14px;border-radius:999px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;cursor:pointer;"><span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Filter ↓</span></div>
+      </div>
+      <!-- empty state -->
+      <div id="watchlist-empty" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:14px;">
+        <p style="margin:0;font:700 18px/1 'Playfair Display',serif;color:rgba(240,237,230,0.6);">Nothing saved yet</p>
+      </div>
+      <div id="watchlist-filled" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN M: FRIENDS ═══ -->
+  <div id="s-m" class="sera-screen">
+    <div style="flex:1;display:flex;flex-direction:column;padding:20px 24px 88px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex:none;"><div data-go="back" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div><h1 style="margin:0;flex:1;text-align:center;font:700 32px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.02em;">Friends</h1><div style="height:30px;padding:0 14px;border-radius:999px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;cursor:pointer;"><span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">Find friends +</span></div></div>
+      <div style="margin-bottom:14px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:14px;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;"><div style="width:34px;height:34px;border-radius:50%;background:#5C7A6A;display:flex;align-items:center;justify-content:center;flex:none;"><span style="font:600 14px/1 'Raleway',sans-serif;color:#F0EDE8;">L</span></div><div style="flex:1;"><span style="font:600 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Liv</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);margin-left:8px;">2h ago</span></div><div style="width:7px;height:7px;border-radius:50%;background:#5C7A6A;box-shadow:0 0 6px rgba(92,122,106,0.75);"></div></div>
+        <div id="fb-1" style="width:100%;height:64px;border-radius:8px;background:linear-gradient(90deg,#2A3530,#1C2120);"></div>
+        <div style="display:flex;align-items:center;gap:6px;"><div style="width:6px;height:6px;border-radius:50%;background:#5C7A6A;flex:none;"></div><span style="font:700 14px/1.1 'Playfair Display',serif;color:#F0EDE6;">Normal People</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);">· ★★★★★</span></div>
+        <span style="font:400 14px/1.4 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">"This wrecked me in the best way."</span>
+      </div>
+      <div style="margin-bottom:14px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:14px;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;"><div style="width:34px;height:34px;border-radius:50%;background:#8A9490;display:flex;align-items:center;justify-content:center;flex:none;"><span style="font:600 14px/1 'Raleway',sans-serif;color:#F0EDE8;">S</span></div><div style="flex:1;"><span style="font:600 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Sophia</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);margin-left:8px;">5h ago</span></div></div>
+        <div id="fb-2" style="width:100%;height:64px;border-radius:8px;background:linear-gradient(90deg,#2A3530,#1C2120);"></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="font:700 14px/1.1 'Playfair Display',serif;color:#F0EDE6;">Adolescence</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);">· ★★★★★</span></div>
+        <span style="font:400 14px/1.4 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">"Watch it in one sitting."</span>
+      </div>
+      <div style="margin-bottom:14px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:14px;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;"><div style="width:34px;height:34px;border-radius:50%;background:#6A7E74;display:flex;align-items:center;justify-content:center;flex:none;"><span style="font:600 14px/1 'Raleway',sans-serif;color:#F0EDE8;">N</span></div><div style="flex:1;"><span style="font:600 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Noah</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);margin-left:8px;">Yesterday</span></div></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0;"><div id="fb-3" style="flex:none;width:32px;height:46px;border-radius:5px;background:#1C2120;background-size:cover;background-position:center;"></div><div style="display:flex;flex-direction:column;gap:3px;"><span style="font:700 14px/1.1 'Playfair Display',serif;color:#F0EDE6;">The Brutalist</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);">★★★★</span></div></div>
+        <span style="font:400 14px/1.4 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">"Stunning. Long but every minute counts."</span>
+      </div>
+      <div style="margin-bottom:14px;border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);padding:14px;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;"><div style="width:34px;height:34px;border-radius:50%;background:#5C6A7A;display:flex;align-items:center;justify-content:center;flex:none;"><span style="font:600 14px/1 'Raleway',sans-serif;color:#F0EDE8;">M</span></div><div style="flex:1;"><span style="font:600 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Mara</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);margin-left:8px;">3 days ago</span></div></div>
+        <div style="display:flex;gap:8px;">
+          <div id="fb-5" style="flex:none;width:38px;height:54px;border-radius:6px;background:linear-gradient(160deg,#3A4555,#1E2230);background-size:cover;background-position:center;"></div>
+          <div id="fb-6" style="flex:none;width:38px;height:54px;border-radius:6px;background:linear-gradient(160deg,#3A5040,#1E2A22);background-size:cover;background-position:center;"></div>
+          <div id="fb-7" style="flex:none;width:38px;height:54px;border-radius:6px;background:linear-gradient(160deg,#553A30,#2A1E18);background-size:cover;background-position:center;"></div>
+        </div>
+        <span style="font:700 14px/1.1 'Playfair Display',serif;color:#F0EDE6;">Logged 3 films this week</span>
+        <span style="font:400 14px/1.4 'Raleway',sans-serif;color:rgba(240,237,230,0.45);">Aftersun · Céline & Julie · Portrait of a Lady on Fire</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN N: PROFILE ═══ -->
+  <div id="s-n" class="sera-screen">
+    <div style="flex:1;display:flex;flex-direction:column;padding:20px 24px 88px;">
+      <!-- Settings icon top right -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex:none;"><div data-go="back" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div>
+        <div data-go="o" style="width:34px;height:34px;border-radius:50%;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.55)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
+      </div>
+      <!-- Centered avatar + name + bio -->
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-bottom:28px;flex:none;">
+        <div style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#5C7A6A,#3E5C4A);display:flex;align-items:center;justify-content:center;border:2px solid rgba(92,122,106,0.4);flex:none;">
+          <span style="font:700 44px/1 'Playfair Display',serif;color:#F0EDE8;">O</span>
+        </div>
+        <h2 style="margin:0;font:700 36px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.02em;">Ophelia</h2>
+        <span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.5);">@ophelia · Karlsruhe</span>
+        <p style="margin:0;font:400 14px/1.5 'Raleway',sans-serif;color:rgba(240,237,230,0.5);max-width:260px;">Romance, slow evenings and films that linger.</p>
+      </div>
+      <!-- Stats single card -->
+      <div style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);display:flex;margin-bottom:28px;flex:none;">
+        <div style="flex:1;padding:16px;text-align:center;border-right:1px solid rgba(240,237,230,0.06);"><span style="font:700 26px/1 'Playfair Display',serif;color:#F0EDE6;display:block;margin-bottom:6px;">47</span><span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.45);letter-spacing:0.1em;text-transform:uppercase;">Films</span></div>
+        <div style="flex:1;padding:16px;text-align:center;border-right:1px solid rgba(240,237,230,0.06);"><span style="font:700 26px/1 'Playfair Display',serif;color:#F0EDE6;display:block;margin-bottom:6px;">122h</span><span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.45);letter-spacing:0.1em;text-transform:uppercase;">Watched</span></div>
+        <div style="flex:1;padding:16px;text-align:center;"><span style="font:700 26px/1 'Playfair Display',serif;color:#F0EDE6;display:block;margin-bottom:6px;">8</span><span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.45);letter-spacing:0.1em;text-transform:uppercase;">Series</span></div>
+      </div>
+      <!-- Favourite genres -->
+      <span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.12em;text-transform:uppercase;display:block;margin-bottom:16px;flex:none;">Favourite genres</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;flex:none;">
+        <div style="height:30px;border-radius:999px;padding:0 14px;background:rgba(240,237,230,0.06);border:1px solid rgba(240,237,230,0.1);display:flex;align-items:center;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.5);">Romance</span></div>
+        <div style="height:30px;border-radius:999px;padding:0 14px;background:rgba(240,237,230,0.06);border:1px solid rgba(240,237,230,0.1);display:flex;align-items:center;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.5);">Drama</span></div>
+        <div style="height:30px;border-radius:999px;padding:0 14px;background:rgba(240,237,230,0.06);border:1px solid rgba(240,237,230,0.1);display:flex;align-items:center;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.5);">Comedy</span></div>
+        <div style="height:30px;border-radius:999px;padding:0 14px;background:rgba(240,237,230,0.06);border:1px solid rgba(240,237,230,0.1);display:flex;align-items:center;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.5);">Arthouse</span></div>
+        <div style="height:30px;border-radius:999px;padding:0 14px;background:rgba(240,237,230,0.06);border:1px solid rgba(240,237,230,0.1);display:flex;align-items:center;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.5);">Thriller</span></div>
+      </div>
+      <!-- Recently watched -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex:none;">
+        <span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.12em;text-transform:uppercase;">Recently watched</span>
+        <span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);">See all →</span>
+      </div>
+      <div id="profile-rated-row" style="display:grid;grid-template-columns:repeat(4,1fr);column-gap:8px;row-gap:20px;align-items:start;flex:none;"></div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN O: SETTINGS ═══ -->
+  <div id="s-o" class="sera-screen">
+    <div style="flex:1;display:flex;flex-direction:column;padding:20px 24px 88px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex:none;"><div data-go="n" style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div><h1 style="margin:0;font:700 28px/1 'Playfair Display',serif;color:#F0EDE6;letter-spacing:-0.02em;">Settings</h1></div>
+      <span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:12px;flex:none;">Account</span>
+      <div style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);overflow:hidden;margin-bottom:14px;flex:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(240,237,230,0.05);"><span style="font:400 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Display name</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);">Ophelia ›</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(240,237,230,0.05);"><span style="font:400 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Email</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);">ophelia@… ›</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;"><span style="font:400 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Password</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);">Change ›</span></div>
+      </div>
+      <span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:12px;flex:none;">Streaming services</span>
+      <div style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);overflow:hidden;margin-bottom:14px;flex:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(240,237,230,0.05);"><span style="font:400 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Connected services</span><span style="font:400 14px/1 'Raleway',sans-serif;color:#5C7A6A;">4 active ›</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;"><span style="font:400 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Country</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);">🇩🇪 Germany ›</span></div>
+      </div>
+      <span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:12px;flex:none;">Notifications</span>
+      <div style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);overflow:hidden;margin-bottom:14px;flex:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(240,237,230,0.05);"><span style="font:400 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Friend activity</span><div style="width:34px;height:20px;border-radius:999px;background:#5C7A6A;position:relative;flex:none;"><div style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#F0EDE8;"></div></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;"><span style="font:400 14px/1 'Raleway',sans-serif;color:#F0EDE6;">New recommendations</span><div style="width:34px;height:20px;border-radius:999px;background:rgba(240,237,230,0.1);border:1px solid rgba(240,237,230,0.08);position:relative;flex:none;"><div style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:rgba(240,237,230,0.32);"></div></div></div>
+      </div>
+      <span style="font:500 12px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:12px;flex:none;">Privacy</span>
+      <div style="border-radius:16px;background:#252D29;border:1px solid rgba(240,237,230,0.06);overflow:hidden;flex:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(240,237,230,0.05);"><span style="font:400 14px/1 'Raleway',sans-serif;color:#F0EDE6;">Profile visibility</span><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);">Friends ›</span></div>
+        <div style="padding:14px 16px;"><span style="font:400 14px/1 'Raleway',sans-serif;color:rgba(200,80,70,0.85);">Delete account</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ BOTTOM NAV ═══ -->
+  <div id="bottom-nav" style="display:none;position:absolute;bottom:0;left:0;right:0;height:76px;background:#161C1A;border-top:1px solid rgba(240,237,230,0.05);z-index:35;align-items:center;padding:0 4px 12px;">
+    <div data-nav="f" class="bnav-item" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding-top:10px;">
+      <div class="bnav-pill" style="width:44px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;transition:background 0.2s;"><svg class="bnav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.4)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3L21 9.5V20C21 20.6 20.6 21 20 21H15V16H9V21H4C3.4 21 3 20.6 3 20V9.5Z"></path></svg></div>
+      <span class="bnav-label" style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);letter-spacing:0.03em;">Home</span>
+    </div>
+    <div data-nav="g" class="bnav-item" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding-top:10px;">
+      <div class="bnav-pill" style="width:44px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;transition:background 0.2s;"><span class="bnav-icon" style="font: 700 25px/1 &#39;Playfair Display&#39;,serif; color: rgba(240,237,230,0.4); display: block; margin: 0px 0px 6px; padding: 0; transform: translateY(1px)">s.</span></div>
+      <span class="bnav-label" style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);letter-spacing:0.03em;">Ask</span>
+    </div>
+    <div data-nav="k" class="bnav-item" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding-top:10px;">
+      <div class="bnav-pill" style="width:44px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;transition:background 0.2s;"><svg class="bnav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.4)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21L16.65 16.65"></path></svg></div>
+      <span class="bnav-label" style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);letter-spacing:0.03em;">Browse</span>
+    </div>
+    <div data-nav="w" class="bnav-item" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding-top:10px;">
+      <div class="bnav-pill" style="width:44px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;transition:background 0.2s;"><svg class="bnav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.4)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></div>
+      <span class="bnav-label" style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);letter-spacing:0.03em;">Watchlist</span>
+    </div>
+    <div data-nav="m" class="bnav-item" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding-top:10px;">
+      <div class="bnav-pill" style="width:44px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;transition:background 0.2s;"><svg class="bnav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.4)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+      <span class="bnav-label" style="font:400 14px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.4);letter-spacing:0.03em;">Friends</span>
+    </div>
+
+
+  </div>
+
+  <!-- ═══ SEARCH OVERLAY ═══ -->
+  <div id="search-overlay" style="display:none;position:absolute;inset:0;background:#1C2120;z-index:30;flex-direction:column;">
+    <div style="padding:16px 24px 10px;flex:none;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div data-close-search style="width:34px;height:34px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><span style="font:300 18px/1 'Raleway',sans-serif;color:rgba(240,237,230,0.55);">←</span></div>
+        <div style="position:relative;flex:1;">
+          <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="rgba(240,237,230,0.35)" stroke-width="1.4"></circle><path d="M11 11L14 14" stroke="rgba(240,237,230,0.35)" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <input id="search-input" type="text" placeholder="Search for a title…" style="width:100%;height:44px;background:#252D29;border:1px solid rgba(240,237,230,0.08);border-radius:12px;padding:0 16px 0 36px;color:#F0EDE6;font:400 16px/1 'Raleway',sans-serif;outline:none;-webkit-appearance:none;" />
+        </div>
+      </div>
+    </div>
+    <div id="search-results" style="flex:1;overflow-y:auto;padding-bottom:76px;"></div>
+  </div>
+</div>
+
+<script>
+// ─── Config ───────────────────────────────────────────
+const TMDB_KEY = (window.SERA_CONFIG && window.SERA_CONFIG.tmdbKey) || '';
+const TMDB_BASE = 'https://api.themoviedb.org/3';
+const TMDB_IMG = 'https://image.tmdb.org/t/p/w500';
+const TMDB_BACK = 'https://image.tmdb.org/t/p/w780';
+
+const MOODS = [
+  {id:'cozy',label:'Cozy & warm',gm:'10749',gt:'10749'},
+  {id:'laugh',label:'Need a laugh',gm:'35',gt:'35'},
+  {id:'cry',label:'A good cry',gm:'18',gt:'18'},
+  {id:'off',label:'Brain off',gm:'35,28,12',gt:'35,10759'},
+  {id:'similar',label:'Something similar',gm:'10749',gt:'10749'},
+];
+
+const SEED_TITLES = ['Bluey','Wednesday','Severance','Harry Potter','Moana','Squid Game','Stranger Things','Ginny and Georgia','Landman','The White Lotus','Breaking Bad','The Last of Us','Bridgerton','Emily in Paris','Game of Thrones'];
+
+let state = {
+  screen:'0', prevScreen:'f', filmType:'movie', selectedMood:null,
+  selectedMedia:null, shortlist:[], browseType:'movie',
+  browseActiveMood:'cozy', searchContext:'track',
+  rating:0, watchlisted:false, selectedSeason:1, trackedEps:{},
+};
+
+// ─── Seed grid ────────────────────────────────────────
+function buildSeedGrid() {
+  const grid = document.getElementById('seed-grid');
+  if (!grid) return;
+  grid.innerHTML = SEED_TITLES.map(title => `
+    <div data-seed="${title}" style="position:relative;border-radius:10px;overflow:hidden;aspect-ratio:2/3;cursor:pointer;">
+      <img data-seed-title="${title}" style="width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.3s;position:absolute;inset:0;" alt="${title}">
+      <div class="seed-placeholder" style="position:absolute;inset:0;background:#252D29;display:flex;align-items:center;justify-content:center;"><span style="font:400 14px/1.3 'Raleway',sans-serif;color:rgba(240,237,230,0.3);text-align:center;padding:8px;">${title}</span></div>
+      <div class="seed-check" style="display:none;position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:50%;background:#5C7A6A;align-items:center;justify-content:center;z-index:3;"><svg width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3L3 5L7 1" stroke="#F0EDE8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+      <div class="seed-ring" style="display:none;position:absolute;inset:0;border-radius:10px;border:2.5px solid #5C7A6A;pointer-events:none;z-index:2;"></div>
+    </div>`).join('');
+}
+
+// ─── Navigation ───────────────────────────────────────
+const SCREEN_ORDER = ['0','a','b','c','d','e','f','g','h','i','j','w','k','l','m','n','o'];
+const TAB_SCREENS  = ['f','w','k','m','n'];
+
+function showScreen(id) {
+  const prev = state.screen;
+  const prevEl = document.getElementById('s-' + prev);
+  if (prevEl) prevEl.classList.remove('active','screen-slide-right','screen-slide-left','screen-slide-up','screen-fade');
+
+  const el = document.getElementById('s-' + id);
+  if (el) {
+    // pick animation
+    const fromTab = TAB_SCREENS.includes(prev);
+    const toTab   = TAB_SCREENS.includes(id);
+    el.classList.remove('screen-slide-right','screen-slide-left','screen-slide-up','screen-fade');
+    if (id === 'l' || id === 'j') {
+      el.classList.add('screen-slide-up');
+    } else if (fromTab && toTab) {
+      el.classList.add('screen-fade');
+    } else {
+      const pi = SCREEN_ORDER.indexOf(prev);
+      const ci = SCREEN_ORDER.indexOf(id);
+      el.classList.add(ci >= pi ? 'screen-slide-right' : 'screen-slide-left');
+    }
+    el.classList.add('active');
+    el.scrollTop = 0;
+  }
+  state.screen = id;
+  if (id === 'g') {
+    clearTimeout(typeTimer);
+    document.querySelectorAll('[data-type]').forEach(function(tile) {
+      tile.style.background = '#252D29'; tile.style.borderColor = 'rgba(240,237,230,0.06)';
+      var t = tile.querySelector('.type-title'); if (t) t.style.color = '#F0EDE6';
+      var s = tile.querySelector('.type-sub'); if (s) s.style.color = 'rgba(240,237,230,0.55)';
+    });
+  }
+  if (id === 'h') {
+    clearTimeout(moodTimer);
+    document.querySelectorAll('[data-mood]').forEach(function(tile) {
+      if (!tile.dataset.mood || tile.dataset.mood === 'random') return;
+      if (tile.dataset.mood === 'similar') { tile.style.opacity = '1'; tile.style.background = 'linear-gradient(155deg,#5C7A6A 0%,#3E5C4A 100%)'; tile.style.boxShadow = 'none'; return; }
+      tile.style.background = '#252D29'; tile.style.borderColor = 'rgba(240,237,230,0.06)';
+      var t = tile.querySelector('.mood-title'); if (t) t.style.color = '#F0EDE6';
+      var s = tile.querySelector('.mood-sub'); if (s) s.style.color = 'rgba(240,237,230,0.38)';
+    });
+  }
+  const navScreens = ['f','w','g','h','i','j','k','l','m','n','o'];
+  const nav = document.getElementById('bottom-nav');
+  if (nav) {
+    nav.style.display = navScreens.includes(id) ? 'flex' : 'none';
+    const activeMap = {f:'f',k:'k',m:'m',w:'w',n:'n',j:'f',l:'k',g:'g',h:'g',i:'g',o:'n'};
+    const activeId = activeMap[id] || '';
+    nav.querySelectorAll('.bnav-item').forEach(item => {
+      const isActive = item.dataset.nav === activeId;
+      const pill = item.querySelector('.bnav-pill');
+      const icon = item.querySelector('.bnav-icon');
+      const lbl = item.querySelector('.bnav-label');
+      if (pill) pill.style.background = isActive ? '#5C7A6A' : 'transparent';
+      if (icon) {
+        if (icon.tagName && icon.tagName.toLowerCase() === 'svg') {
+          icon.setAttribute('stroke', isActive ? '#F0EDE8' : 'rgba(240,237,230,0.4)');
+        } else {
+          icon.style.color = isActive ? '#F0EDE8' : 'rgba(240,237,230,0.4)';
+        }
+      }
+      if (lbl) lbl.style.color = isActive ? '#F0EDE6' : 'rgba(240,237,230,0.4)';
+    });
+  }
+}
+
+function navigate(target) {
+  hideSearch();
+  if (target === 'back') {
+    if (state.screen === 'h') { showScreen('g'); return; }
+    if (state.screen === 'i') { showScreen('h'); return; }
+    // On Browse: if search mode is active, clear it rather than leaving the screen
+    if (state.screen === 'k') {
+      const mode = document.getElementById('browse-search-mode');
+      if (mode && mode.style.display !== 'none') {
+        const inp  = document.getElementById('browse-search');
+        const disc = document.getElementById('browse-discover');
+        const xBtn = document.getElementById('browse-search-x');
+        const list = document.getElementById('browse-search-list');
+        if (inp)  inp.value = '';
+        if (disc) disc.style.display = '';
+        if (mode) mode.style.display = 'none';
+        if (xBtn) xBtn.style.display = 'none';
+        if (list) list.innerHTML = '';
+        return;
+      }
+    }
+    showScreen(state.prevScreen || 'f'); return;
+  }
+  if (target === 'random-type') {
+    state.filmType = Math.random() < 0.5 ? 'movie' : 'tv';
+    state.prevScreen = state.screen;
+    showScreen('h');
+    return;
+  }
+  if (target === 'search-track') { showSearch('track'); return; }
+  if (target === 'reshuffle') { if (state.selectedMood) { const c = document.getElementById('shortlist-items'); if(c){c.style.opacity='0';c.style.transition='opacity 0.15s';setTimeout(()=>{fetchShortlist(state.selectedMood);c.style.opacity='1';},150);} else fetchShortlist(state.selectedMood); } return; }
+  state.prevScreen = state.screen;
+  showScreen(target);
+}
+
+// ─── Event delegation ─────────────────────────────────
+document.getElementById('sera-app').addEventListener('click', e => {
+  const goEl = e.target.closest('[data-go]'); if (goEl) { navigate(goEl.dataset.go); return; }
+  const navEl = e.target.closest('[data-nav]'); if (navEl) { navigate(navEl.dataset.nav); return; }
+  const typeEl = e.target.closest('[data-type]'); if (typeEl) { selectType(typeEl.dataset.type); return; }
+  const moodEl = e.target.closest('[data-mood]'); if (moodEl) { selectMood(moodEl.dataset.mood); return; }
+  const btEl = e.target.closest('[data-browse-type]'); if (btEl) { setBrowseType(btEl.dataset.browseType); return; }
+  const bmEl = e.target.closest('[data-browse-mood]'); if (bmEl) { browseMood(bmEl.dataset.browseMood); return; }
+  const starEl = e.target.closest('[data-star]'); if (starEl) { setRating(parseInt(starEl.dataset.star)); return; }
+  const toggleEl = e.target.closest('[data-toggle]'); if (toggleEl) { toggleOption(toggleEl.dataset.toggle); return; }
+  const epEl = e.target.closest('[data-ep]'); if (epEl) { toggleEp(epEl.dataset.ep); return; }
+  const openEpEl = e.target.closest('[data-open-ep]'); if (openEpEl) { updateJScreen({ title: (state.selectedMedia?.title||'') + ' · E' + openEpEl.dataset.epNum, overview: decodeURIComponent(openEpEl.dataset.epOverview||''), year: state.selectedMedia?.year, type: 'episode', posterUrl: state.selectedMedia?.posterUrl }); navigate('j'); return; }
+  const seasonEl = e.target.closest('[data-season]'); if (seasonEl) { selectSeason(parseInt(seasonEl.dataset.season)); return; }
+  const wlEl = e.target.closest('[data-watchlist]'); if (wlEl) { state.watchlisted = !state.watchlisted; if (state.watchlisted && state.selectedMedia) addToWatchlist(state.selectedMedia); else if (!state.watchlisted && state.selectedMedia) removeFromWatchlist(state.selectedMedia.id); animateBookmark(state.watchlisted); return; }
+  const closeEl = e.target.closest('[data-close-search]'); if (closeEl) { hideSearch(); return; }
+  const seedEl = e.target.closest('[data-seed]'); if (seedEl) { toggleSeedPoster(seedEl); return; }
+  const svcEl = e.target.closest('[data-service]'); if (svcEl) { toggleService(svcEl); return; }
+});
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'search-input') handleSearch(e.target.value);
+  if (e.target.id === 'seed-search') handleSeedSearch(e.target.value);
+  if (e.target.id === 'browse-search') {
+    handleBrowseSearch(e.target.value);
+    const disc = document.getElementById('browse-discover');
+    const mode = document.getElementById('browse-search-mode');
+    const xBtn = document.getElementById('browse-search-x');
+    if (e.target.value.trim()) {
+      if (disc) disc.style.display = 'none';
+      if (mode) mode.style.display = 'flex';
+      if (xBtn) xBtn.style.display = 'flex';
+    } else {
+      if (disc) disc.style.display = '';
+      if (mode) mode.style.display = 'none';
+      if (xBtn) xBtn.style.display = 'none';
+    }
+  }
+});
+
+// ─── Type / mood ──────────────────────────────────────
+let typeTimer = null;
+function selectType(type) {
+  state.filmType = type;
+  document.querySelectorAll('[data-type]').forEach(el => {
+    const active = el.dataset.type === type;
+    el.style.background = active ? '#F0EDE8' : '#252D29';
+    el.style.borderColor = active ? 'transparent' : 'rgba(240,237,230,0.06)';
+    const t = el.querySelector('.type-title'); if (t) t.style.color = active ? '#1A2018' : '#F0EDE6';
+    const s = el.querySelector('.type-sub'); if (s) s.style.color = active ? 'rgba(26,32,24,0.55)' : 'rgba(240,237,230,0.55)';
+  });
+  clearTimeout(typeTimer);
+  typeTimer = setTimeout(() => { showScreen('h'); }, 1000);
+}
+
+let moodTimer = null;
+function selectMood(moodId) {
+  const isRandom = moodId === 'random';
+  if (isRandom) { const ids=['cozy','laugh','cry','off']; moodId = ids[Math.floor(Math.random()*ids.length)]; }
+  const mood = MOODS.find(m => m.id === moodId) || MOODS[0];
+  state.selectedMood = mood;
+  // Highlight selected tile (skipped for surprise picks)
+  if (!isRandom) { document.querySelectorAll('[data-mood]').forEach(el => {
+    if (!el.dataset.mood || el.dataset.mood === 'random') return;
+    const active = el.dataset.mood === moodId;
+    if (el.dataset.mood === 'similar') {
+      if (active) {
+        el.style.opacity = '1';
+        el.style.background = 'linear-gradient(155deg,#7EAF96 0%,#527A62 100%)';
+        el.style.boxShadow = 'inset 0 0 0 2px rgba(240,237,232,0.45)';
+      }
+      // don't change similar tile when it's not the selected one
+      el.style.boxShadow = active ? 'inset 0 0 0 2px rgba(240,237,232,0.45)' : 'none';
+    } else {
+      el.style.background = active ? '#F0EDE8' : '#252D29';
+      el.style.borderColor = active ? 'transparent' : 'rgba(240,237,230,0.06)';
+      const t = el.querySelector('.mood-title'); if (t) t.style.color = active ? '#1A2018' : '#F0EDE6';
+      const s = el.querySelector('.mood-sub'); if (s) s.style.color = active ? 'rgba(26,32,24,0.55)' : 'rgba(240,237,230,0.38)';
+    }
+  }); }
+  // Fetch in background so it's ready when we arrive
+  fetchShortlist(mood);
+  clearTimeout(moodTimer);
+  moodTimer = setTimeout(() => { showScreen('i'); }, isRandom ? 100 : 1000);
+}
+
+// ─── Shortlist ────────────────────────────────────────
+async function fetchShortlist(mood) {
+  const items = document.getElementById('shortlist-items');
+  if (items) items.innerHTML = '<div style="display:flex;justify-content:center;padding:28px 0;"><div style="width:24px;height:24px;border-radius:50%;border:2px solid rgba(240,237,230,0.1);border-top-color:#5C7A6A;animation:spin 1s linear infinite;"></div></div>';
+  const heroPh = document.getElementById('shortlist-hero-placeholder');
+  const heroImg = document.getElementById('shortlist-hero-img');
+  const heroTitle = document.getElementById('shortlist-hero-title');
+  const heroDesc  = document.getElementById('shortlist-hero-desc');
+  if (heroPh) heroPh.style.display = 'flex';
+  if (heroImg) heroImg.style.display = 'none';
+  if (heroTitle) heroTitle.textContent = 'Loading…';
+  if (heroDesc)  heroDesc.textContent  = '';
+  const typeLabel = document.getElementById('shortlist-type-label');
+  if (typeLabel) typeLabel.textContent = (state.filmType === 'tv' ? 'Series' : 'Film') + ' · ' + mood.label;
+  let results = [];
+  if (TMDB_KEY) {
+    try {
+      const type = state.filmType;
+      const genres = type === 'movie' ? mood.gm : mood.gt;
+      const genreParam = genres ? '&with_genres=' + genres : '';
+      const page = Math.floor(Math.random()*3)+1;
+      const resp = await fetch(TMDB_BASE + '/discover/' + (type==='movie'?'movie':'tv') + '?api_key=' + TMDB_KEY + genreParam + '&sort_by=popularity.desc&vote_count.gte=100&language=en-US&page='+page);
+      const data = await resp.json();
+      const pool = (data.results||[]).filter(r=>r.poster_path).sort(()=>Math.random()-0.5);
+      results = pool.slice(0,5).map(r=>mapItem(r,type));
+    } catch(e) { results = staticShortlist(); }
+  } else { results = staticShortlist(); }
+  if (!results.length) results = staticShortlist();
+  results = results.slice().sort(() => Math.random() - 0.5);
+  state.shortlist = results;
+  renderShortlist(results);
+}
+
+const SHORTLIST_FRIENDS = [
+  {initials:'L', color:'#5C7A6A', note:'Liv loved it'},
+  {initials:'N', color:'#6A7E74', note:'Noor & Sam loved it'},
+  {initials:'T', color:'#8A9490', note:'Theo thought it was alright'},
+  {initials:'S', color:'#6A7E74', note:'Sam loved it'},
+  {initials:'L', color:'#5C7A6A', note:'Liv & Noor watched this'},
+];
+
+function renderShortlist(items) {
+  if (!items.length) return;
+  const first = items[0];
+  const heroImg     = document.getElementById('shortlist-hero-img');
+  const heroPh      = document.getElementById('shortlist-hero-placeholder');
+  const heroTitle   = document.getElementById('shortlist-hero-title');
+  const heroMeta    = document.getElementById('shortlist-hero-meta');
+  const heroDesc    = document.getElementById('shortlist-hero-desc');
+  const heroFriends = document.getElementById('shortlist-hero-friends');
+  const heroBadge   = document.getElementById('shortlist-hero-badge');
+
+  if (first.posterUrl) { if (heroImg) { heroImg.src = first.posterUrl; heroImg.style.display = 'block'; } if (heroPh) heroPh.style.display = 'none'; }
+  else { if (heroPh) heroPh.style.display = 'flex'; if (heroImg) heroImg.style.display = 'none'; }
+
+  if (heroTitle) heroTitle.textContent = first.title;
+  if (heroDesc)  heroDesc.textContent  = first.overview || '';
+  if (heroMeta)  heroMeta.textContent  = (first.type === 'tv' ? 'Series' : 'Film') + ' · ' + first.year;
+  if (heroBadge) {
+    const svc = first.streaming && first.streaming[0] ? ' · ' + first.streaming[0].name.toUpperCase() : '';
+    heroBadge.querySelector('span').textContent = 'TOP PICK' + svc;
+  }
+  if (heroFriends) heroFriends.innerHTML = `<div style="display:flex;"><div style="width:22px;height:22px;border-radius:50%;background:#5C7A6A;border:1.5px solid #F0EDE8;display:flex;align-items:center;justify-content:center;flex:none;"><span style="font:600 12px/1 Raleway,sans-serif;color:#F0EDE8;">L</span></div><div style="width:22px;height:22px;border-radius:50%;background:#8A9490;border:1.5px solid #F0EDE8;display:flex;align-items:center;justify-content:center;flex:none;margin-left:-6px;"><span style="font:600 12px/1 Raleway,sans-serif;color:#F0EDE8;">S</span></div></div><span style="font:400 14px/1 Raleway,sans-serif;color:rgba(26,32,24,0.6);">Liv &amp; Sam loved it</span>`;
+
+  const heroArea = document.getElementById('shortlist-hero-area');
+  if (heroArea) heroArea.onclick = () => selectMedia(first);
+
+  const container = document.getElementById('shortlist-items');
+  if (!container) return;
+
+  container.innerHTML = items.slice(1).map((item, i) => {
+    const friend = SHORTLIST_FRIENDS[i % SHORTLIST_FRIENDS.length];
+    const meta   = (item.type === 'tv' ? 'Series' : 'Film') + ' · ' + item.year;
+    const desc   = (item.overview || '').slice(0, 90) + ((item.overview || '').length > 90 ? '…' : '');
+    const poster = item.posterUrl
+      ? `<img src="${item.posterUrl}" style="flex:none;width:66px;height:96px;border-radius:8px;object-fit:cover;" alt="">`
+      : `<div style="flex:none;width:66px;height:96px;border-radius:8px;background:#252D29;display:flex;align-items:center;justify-content:center;padding:6px;"><span style="font:400 14px/1.3 Raleway,sans-serif;color:rgba(240,237,230,0.3);text-align:center;">${item.title}</span></div>`;
+    return `<div style="display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid rgba(240,237,230,0.07);cursor:pointer;" data-sl-idx="${i+1}">
+      ${poster}
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+        <span style="font:700 16px/1.1 'Playfair Display',serif;color:#F0EDE6;">${item.title}</span>
+        <span style="font:400 14px/1 Raleway,sans-serif;color:rgba(240,237,230,0.45);">${meta}</span>
+        ${desc ? `<p style="margin:2px 0 0;font:400 14px/1.4 Raleway,sans-serif;color:rgba(240,237,230,0.5);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${desc}</p>` : ''}
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+          <div style="width:20px;height:20px;border-radius:50%;background:${friend.color};display:flex;align-items:center;justify-content:center;flex:none;"><span style="font:600 12px/1 Raleway,sans-serif;color:#F0EDE8;">${friend.initials}</span></div>
+          <span style="font:400 14px/1 Raleway,sans-serif;color:rgba(240,237,230,0.45);">${friend.note}</span>
+        </div>
+      </div>
+      <div onclick="event.stopPropagation();" style="flex:none;width:36px;height:36px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:2px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.45)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg>
+      </div>
+    </div>`;
+  }).join('');
+
+  container.querySelectorAll('[data-sl-idx]').forEach(el => {
+    const idx = parseInt(el.dataset.slIdx);
+    el.addEventListener('click', () => selectMedia(items[idx]));
+  });
+}
+
+// ─── Media selection ──────────────────────────────────
+async function selectMedia(item, context) {
+  state.selectedMedia = item; state.watchlisted = false; state.rating = 0; state.trackedEps = {};
+  const lbl = document.getElementById('watchlist-label'); if (lbl) lbl.textContent = 'Add to Watchlist';
+  setRating(0);
+  state.prevScreen = state.screen;
+  if (context === 'track') { hideSearch(); showScreen('j'); updateJScreen(item); }
+  else { showScreen('l'); updateDetailScreen(item); if (TMDB_KEY) fetchDetails(item); }
+}
+
+async function fetchDetails(item) {
+  try {
+    const endpoint = item.type === 'tv' ? 'tv' : 'movie';
+    const resp = await fetch(TMDB_BASE + '/' + endpoint + '/' + item.id + '?api_key=' + TMDB_KEY + '&append_to_response=credits,watch%2Fproviders&language=en-US');
+    const d = await resp.json();
+    const cast = ((d.credits||{}).cast||[]).slice(0,5).map(c=>({name:c.name,initials:c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}));
+    const wpR = ((d['watch/providers']||{}).results||{});
+    const wp = wpR['DE']||wpR['US']||wpR[Object.keys(wpR)[0]]||{};
+    const streaming = (wp.flatrate||[]).slice(0,4).map(p=>({name:p.provider_name,logo:'https://image.tmdb.org/t/p/w92'+p.logo_path}));
+    const genres = (d.genres||[]).map(g=>g.name);
+    const seasons = d.seasons?d.seasons.filter(s=>s.season_number>0):null;
+    const enriched = {...item,cast,streaming,genres,seasons,overview:d.overview||item.overview};
+    state.selectedMedia = enriched;
+    updateDetailScreen(enriched);
+    if (item.type==='tv'&&seasons&&seasons.length) loadSeason(item.id,1);
+  } catch(e) {}
+}
+
+async function loadSeason(tvId, num) {
+  if (!TMDB_KEY) return;
+  try {
+    const resp = await fetch(TMDB_BASE + '/tv/' + tvId + '/season/' + num + '?api_key=' + TMDB_KEY + '&language=en-US');
+    const d = await resp.json();
+    const episodes = (d.episodes||[]).map(ep=>({id:ep.id,number:ep.episode_number,name:ep.name,overview:ep.overview,runtime:ep.runtime,stillUrl:ep.still_path?'https://image.tmdb.org/t/p/w300'+ep.still_path:''}));
+    state.selectedSeason = num;
+    renderEpisodes(episodes);
+  } catch(e) {}
+}
+
+function selectSeason(num) {
+  state.selectedSeason = num;
+  document.querySelectorAll('[data-season]').forEach(el => {
+    const active = parseInt(el.dataset.season) === num;
+    el.style.background = active ? '#5C7A6A' : '#252D29';
+    el.style.borderColor = active ? 'transparent' : 'rgba(240,237,230,0.08)';
+    const span = el.querySelector('span'); if (span) span.style.color = active ? '#F0EDE8' : 'rgba(240,237,230,0.6)';
+  });
+  if (state.selectedMedia) loadSeason(state.selectedMedia.id, num);
+}
+
+function toggleEp(epId) {
+  state.trackedEps[epId] = !state.trackedEps[epId];
+  const el = document.querySelector('[data-ep="'+epId+'"]');
+  if (el) { el.style.background = state.trackedEps[epId] ? '#5C7A6A' : '#252D29'; el.style.borderColor = state.trackedEps[epId] ? 'transparent' : 'rgba(240,237,230,0.1)'; }
+}
+
+function animateBookmark(on) {
+  const btn = document.getElementById('bookmark-btn');
+  const path = document.querySelector('#bookmark-svg path');
+  if (!btn || !path) return;
+  if (on) {
+    btn.style.background = 'rgba(92,122,106,0.22)';
+    btn.style.borderColor = 'rgba(92,122,106,0.5)';
+    path.setAttribute('fill', '#5C7A6A');
+    path.setAttribute('stroke', '#5C7A6A');
+    btn.style.animation = 'bookmarkPop 0.45s cubic-bezier(0.36,0.07,0.19,0.97) both';
+    setTimeout(() => { btn.style.animation = ''; }, 450);
+  } else {
+    btn.style.background = '#252D29';
+    btn.style.borderColor = 'rgba(240,237,230,0.08)';
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', 'rgba(240,237,230,0.65)');
+  }
+}
+
+function setRating(n) {
+  state.rating = n;
+  document.querySelectorAll('[data-star]').forEach(el => {
+    const v = parseInt(el.dataset.star);
+    const starEl = el.querySelector('span:first-child');
+    const labelEl = el.querySelectorAll('span')[1];
+    if (starEl) starEl.style.color = v <= n ? '#779F8A' : 'rgba(240,237,230,0.22)';
+    if (labelEl) labelEl.style.color = v <= n ? 'rgba(119,159,138,0.8)' : 'rgba(240,237,230,0.35)';
+  });
+}
+
+function toggleOption(key) {
+  const el = document.querySelector('[data-toggle="'+key+'"]');
+  if (!el) return;
+  const on = el.dataset.on !== 'true';
+  el.dataset.on = on;
+  el.style.background = on ? '#5C7A6A' : '#3A3F3C';
+  const knob = el.querySelector('div');
+  if (knob) knob.style.transform = on ? 'translateX(18px)' : 'translateX(0)';
+}
+
+// ─── Profile & Watchlist demo data ───────────────────
+const PROFILE_RATED_NAMES = [
+  {name:'Bridgerton',type:'tv'},{name:'Emily in Paris',type:'tv'},{name:'Normal People',type:'tv'},
+  {name:'Fleabag',type:'tv'},{name:'Sex Education',type:'tv'},{name:"Schitt's Creek",type:'tv'},
+  {name:'Gilmore Girls',type:'tv'},{name:'Heartstopper',type:'tv'},{name:'One Day',type:'tv'},
+  {name:'Abbott Elementary',type:'tv'},{name:'Ted Lasso',type:'tv'},{name:'Catastrophe',type:'tv'},
+  {name:'Derry Girls',type:'tv'},{name:'The Mindy Project',type:'tv'},{name:'Jane the Virgin',type:'tv'}
+];
+const PROFILE_RATINGS_MAP = {'Bridgerton':'★★★★★','Emily in Paris':'★★★★','Normal People':'★★★★★','Fleabag':'★★★★★','Sex Education':'★★★★',"Schitt's Creek":'★★★','Gilmore Girls':'★★★★★','Heartstopper':'★★★★','One Day':'★★★★★','Abbott Elementary':'★★★★','Ted Lasso':'★★★★★','Catastrophe':'★★★★','Derry Girls':'★★★★★','The Mindy Project':'★★★','Jane the Virgin':'★★★★'};
+
+const WATCHLIST_NAMES = [
+  {name:'Gilmore Girls',type:'tv'},{name:'Heartstopper',type:'tv'},{name:'Abbott Elementary',type:'tv'},
+  {name:'The Marvelous Mrs. Maisel',type:'tv'},{name:'Ginny and Georgia',type:'tv'},{name:'One Day',type:'tv'}
+];
+
+async function fetchItemsByNames(defs) {
+  if (!TMDB_KEY) return [];
+  const results = await Promise.all(defs.map(async d => {
+    try {
+      const r = await fetch(TMDB_BASE+'/search/'+d.type+'?api_key='+TMDB_KEY+'&query='+encodeURIComponent(d.name)+'&language=en-US');
+      const j = await r.json();
+      const hit = (j.results||[])[0];
+      return hit ? mapItem(hit, d.type) : null;
+    } catch(e) { return null; }
+  }));
+  return results.filter(Boolean);
+}
+
+async function loadProfileRated() {
+  const items = await fetchItemsByNames(PROFILE_RATED_NAMES);
+  const row = document.getElementById('profile-rated-row');
+  if (!row || !items.length) return;
+  row.innerHTML = items.map((item,i) => {
+    const stars = PROFILE_RATINGS_MAP[item.title] || '★★★★';
+    const poster = item.posterUrl
+      ? `<img src="${item.posterUrl}" alt="" style="display:block;width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:8px;flex:none;">`
+      : `<div style="display:block;width:100%;aspect-ratio:2/3;background:#252D29;border-radius:8px;flex:none;"></div>`;
+    return `<div data-pr-idx="${i}" style="display:flex;flex-direction:column;gap:5px;cursor:pointer;overflow:hidden;">
+      ${poster}
+      <span style="font:400 13px/1;color:#779F8A;flex:none;">${stars}</span>
+      <span style="font:500 11px/1.2 'Raleway',sans-serif;color:rgba(240,237,230,0.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none;">${item.title}</span>
+    </div>`;
+  }).join('');
+  row.querySelectorAll('[data-pr-idx]').forEach(el => {
+    const item = items[parseInt(el.dataset.prIdx)];
+    if (item) el.addEventListener('click', () => selectMedia(item));
+  });
+}
+
+async function loadDemoWatchlist() {
+  const items = await fetchItemsByNames(WATCHLIST_NAMES);
+  items.forEach(item => { if (!watchlistItems.find(i=>i.id===item.id)) watchlistItems.push(item); });
+  renderWatchlist();
+}
+
+async function loadFriendBackdrops() {
+  if (!TMDB_KEY) return;
+  const defs = [
+    {id:'fb-1',name:'Normal People',type:'tv'},
+    {id:'fb-2',name:'Adolescence',type:'tv'},
+    {id:'fb-3',name:'The Brutalist',type:'movie'},
+    {id:'fb-5',name:'Aftersun',type:'movie'},
+    {id:'fb-6',name:'Celine and Julie Go Boating',type:'movie'},
+    {id:'fb-7',name:'Portrait of a Lady on Fire',type:'movie'},
+  ];
+  for (const d of defs) {
+    try {
+      const el = document.getElementById(d.id);
+      if (!el) continue;
+      const r = await fetch(TMDB_BASE+'/search/'+d.type+'?api_key='+TMDB_KEY+'&query='+encodeURIComponent(d.name)+'&language=en-US');
+      const j = await r.json();
+      const hit = (j.results||[])[0];
+      if (hit) {
+        const usePortrait = d.id==='fb-3'||d.id==='fb-5'||d.id==='fb-6'||d.id==='fb-7';
+        const imgPath = usePortrait ? hit.poster_path : (hit.backdrop_path || hit.poster_path);
+        const base = usePortrait ? 'https://image.tmdb.org/t/p/w200' : TMDB_BACK;
+        if (imgPath) { el.style.backgroundImage='url('+base+imgPath+')'; el.style.backgroundSize='cover'; el.style.backgroundPosition='center'; }
+      }
+    } catch(e) {}
+  }
+}
+
+// ─── Browse ───────────────────────────────────────────
+async function loadTrending() {
+  let results = [];
+  if (TMDB_KEY) {
+    try {
+      const resp = await fetch(TMDB_BASE+'/trending/all/week?api_key='+TMDB_KEY+'&language=en-US');
+      const data = await resp.json();
+      results = (data.results||[]).filter(r=>r.poster_path).slice(0,12).map(r=>mapItem(r,r.media_type||'movie'));
+    } catch(e) { results = staticTrending(); }
+  } else { results = staticTrending(); }
+  renderBrowse(results);
+}
+
+async function browseMood(moodId) {
+  state.browseActiveMood = moodId;
+  document.querySelectorAll('[data-browse-mood]').forEach(el => {
+    const active = el.dataset.browseMood === moodId;
+    el.style.background = active ? '#5C7A6A' : 'transparent';
+    el.style.borderColor = active ? 'transparent' : 'rgba(240,237,230,0.15)';
+    const span = el.querySelector('span'); if (span) span.style.color = active ? '#F0EDE8' : 'rgba(240,237,230,0.55)';
+  });
+  if (!TMDB_KEY) { renderBrowse(staticTrending()); return; }
+  const mood = MOODS.find(m=>m.id===moodId)||MOODS[0];
+  try {
+    const type = state.browseType;
+    const genres = type==='movie' ? mood.gm : mood.gt;
+    const genreParam = genres ? '&with_genres='+genres : '';
+    const resp = await fetch(TMDB_BASE+'/discover/'+(type==='movie'?'movie':'tv')+'?api_key='+TMDB_KEY+genreParam+'&sort_by=popularity.desc&language=en-US');
+    const data = await resp.json();
+    renderBrowse((data.results||[]).filter(r=>r.poster_path).slice(0,6).map(r=>mapItem(r,type)));
+  } catch(e) {}
+}
+
+function setBrowseType(type) {
+  state.browseType = type;
+  ['movie','tv'].forEach(t => {
+    const el = document.getElementById('browse-type-'+(t==='movie'?'film':'tv'));
+    if (!el) return;
+    const active = t === type;
+    el.style.background = active ? '#5C7A6A' : 'transparent';
+    el.style.borderColor = active ? 'transparent' : 'rgba(240,237,230,0.15)';
+    const span = el.querySelector('span'); if (span) span.style.color = active ? '#F0EDE8' : 'rgba(240,237,230,0.55)';
+  });
+  browseMood(state.browseActiveMood);
+}
+
+function renderBrowse(items) {
+  const topRow = document.getElementById('browse-top-row');
+  const chart = document.getElementById('browse-chart');
+  if (topRow) {
+    topRow.innerHTML = items.slice(0,6).map((item,i)=>`<div style="flex:none;width:102px;display:flex;flex-direction:column;gap:6px;cursor:pointer;" data-browse-item="${i}"><div style="position:relative;width:102px;height:148px;border-radius:10px;overflow:hidden;">${item.posterUrl?`<img src="${item.posterUrl}" style="width:100%;height:100%;object-fit:cover;" alt="">`:'<div style="width:100%;height:100%;background:#252D29;"></div>'}</div><span style="font:600 12px/1.2 Raleway,sans-serif;color:#F0EDE6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.title}</span></div>`).join('');
+    topRow.querySelectorAll('[data-browse-item]').forEach(el => { const idx=parseInt(el.dataset.browseItem); if(items[idx]) el.addEventListener('click',()=>selectMedia(items[idx])); });
+  }
+  if (chart) {
+    const chartItems = items.slice(0,10);
+    chart.innerHTML = chartItems.map((item,i)=>`<div style="display:flex;gap:11px;align-items:center;padding:12px 0;${i<chartItems.length-1?'border-bottom:1px solid rgba(240,237,230,0.06);':''}cursor:pointer;" data-chart-item="${i}"><span style="font:700 18px/1 'Playfair Display',serif;color:${i===0?'#779F8A':'rgba(240,237,230,0.55)'};width:20px;text-align:right;flex:none;">${i+1}</span>${item.posterUrl?`<img src="${item.posterUrl}" style="flex:none;width:40px;height:58px;border-radius:8px;object-fit:cover;" alt="">`:'<div style="flex:none;width:40px;height:58px;border-radius:8px;background:#252D29;"></div>'}<div style="flex:1;display:flex;flex-direction:column;gap:3px;"><span style="font:700 14px/1.1 'Playfair Display',serif;color:#F0EDE6;">${item.title}</span><span style="font:400 14px/1 Raleway,sans-serif;color:rgba(240,237,230,0.55);">${item.type==='tv'?'Series':'Film'} · ${item.year}</span></div><span style="font:400 14px/1;color:#779F8A;flex:none;">★ ${item.rating}</span></div>`).join('');
+    chart.querySelectorAll('[data-chart-item]').forEach(el => { const idx=parseInt(el.dataset.chartItem); if(chartItems[idx]) el.addEventListener('click',()=>selectMedia(chartItems[idx])); });
+  }
+}
+
+// ─── Search ───────────────────────────────────────────
+function showSearch(context) {
+  state.searchContext = context;
+  const overlay = document.getElementById('search-overlay');
+  if (overlay) { overlay.style.display = 'flex'; setTimeout(()=>{const i=document.getElementById('search-input');if(i)i.focus();},150); }
+}
+
+function hideSearch() {
+  const overlay = document.getElementById('search-overlay'); if (overlay) overlay.style.display = 'none';
+  const input = document.getElementById('search-input'); if (input) input.value = '';
+  const results = document.getElementById('search-results'); if (results) results.innerHTML = '';
+}
+
+async function handleSearch(query) {
+  const container = document.getElementById('search-results');
+  if (query.length < 2) { if (container) container.innerHTML = ''; return; }
+  if (container) container.innerHTML = '<div style="display:flex;justify-content:center;padding:40px 0;"><div style="width:24px;height:24px;border-radius:50%;border:2px solid rgba(240,237,230,0.1);border-top-color:#5C7A6A;animation:spin 1s linear infinite;"></div></div>';
+  if (!TMDB_KEY) { if (container) container.innerHTML = '<p style="text-align:center;color:rgba(240,237,230,0.4);padding:24px 16px;font:400 14px/1.5 Raleway,sans-serif;">TMDb API key required.</p>'; return; }
+  try {
+    const resp = await fetch(TMDB_BASE+'/search/multi?api_key='+TMDB_KEY+'&query='+encodeURIComponent(query)+'&language=en-US');
+    const data = await resp.json();
+    const results = (data.results||[]).filter(r=>r.poster_path&&(r.media_type==='movie'||r.media_type==='tv')).slice(0,8).map(r=>mapItem(r,r.media_type));
+    renderSearchResults(results, container);
+  } catch(e) { if (container) container.innerHTML = ''; }
+}
+
+async function handleSeedSearch(query) {
+  const container = document.getElementById('seed-search-results');
+  if (!container) return;
+  if (query.length < 2) { container.style.display = 'none'; return; }
+  container.style.display = 'block';
+  container.innerHTML = '<div style="padding:14px 18px;font:400 14px/1 Raleway,sans-serif;color:rgba(240,237,230,0.4);">Searching…</div>';
+  if (!TMDB_KEY) { container.style.display = 'none'; return; }
+  try {
+    const resp = await fetch(TMDB_BASE+'/search/multi?api_key='+TMDB_KEY+'&query='+encodeURIComponent(query)+'&language=en-US');
+    const data = await resp.json();
+    const results = (data.results||[]).filter(r=>r.poster_path).slice(0,5).map(r=>mapItem(r,r.media_type||'movie'));
+    if (!results.length) { container.style.display = 'none'; return; }
+    container.innerHTML = results.map((item,i)=>`<div style="display:flex;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(240,237,230,0.06);cursor:pointer;" data-seed-result="${i}">${item.posterUrl?`<img src="${item.posterUrl}" style="flex:none;width:36px;height:52px;border-radius:6px;object-fit:cover;" alt="">`:'<div style="flex:none;width:36px;height:52px;border-radius:6px;background:#1C2120;"></div>'}<div style="flex:1;"><span style="font:600 14px/1 Raleway,sans-serif;color:#F0EDE6;display:block;margin-bottom:3px;">${item.title}</span><span style="font:400 14px/1 Raleway,sans-serif;color:rgba(240,237,230,0.4);">${item.year}</span></div></div>`).join('');
+    container.querySelectorAll('[data-seed-result]').forEach(el => {
+      el.addEventListener('click', () => {
+        const item = results[parseInt(el.dataset.seedResult)];
+        container.style.display = 'none';
+        const inp = document.getElementById('seed-search'); if (inp) inp.value = '';
+        const slot = document.querySelector('[data-seed]:not([data-selected])');
+        if (slot && item.posterUrl) {
+          const img = slot.querySelector('img[data-seed-title]');
+          const ph = slot.querySelector('.seed-placeholder');
+          if (img) { img.src = item.posterUrl; img.style.opacity = '1'; }
+          if (ph) ph.style.display = 'none';
+          toggleSeedPoster(slot);
+        }
+      });
+    });
+  } catch(e) { container.style.display = 'none'; }
+}
+
+async function handleBrowseSearch(query) {
+  const list = document.getElementById('browse-search-list');
+  if (query.length < 2) { if (list) list.innerHTML = ''; return; }
+  if (list) list.innerHTML = '<div style="display:flex;justify-content:center;padding:40px 0;"><div style="width:24px;height:24px;border-radius:50%;border:2px solid rgba(240,237,230,0.1);border-top-color:#5C7A6A;animation:spin 1s linear infinite;"></div></div>';
+  if (!TMDB_KEY) { if (list) list.innerHTML = '<p style="text-align:center;color:rgba(240,237,230,0.35);padding:32px 16px;font:400 14px/1.5 Raleway,sans-serif;">Add a TMDb API key to enable search.</p>'; return; }
+  try {
+    const resp = await fetch(TMDB_BASE+'/search/multi?api_key='+TMDB_KEY+'&query='+encodeURIComponent(query)+'&language=en-US');
+    const data = await resp.json();
+    const results = (data.results||[]).filter(r=>r.poster_path&&(r.media_type==='movie'||r.media_type==='tv')).slice(0,12).map(r=>mapItem(r,r.media_type));
+    if (!list) return;
+    list.innerHTML = results.length ? results.map((item,i)=>`<div style="display:flex;gap:12px;align-items:center;padding:10px 0;${i<results.length-1?'border-bottom:1px solid rgba(240,237,230,0.06);':''}cursor:pointer;" data-bs-idx="${i}">${item.posterUrl?`<img src="${item.posterUrl}" style="flex:none;width:44px;height:64px;border-radius:8px;object-fit:cover;" alt="">`:'<div style="flex:none;width:44px;height:64px;border-radius:8px;background:#252D29;"></div>'}<div style="flex:1;"><span style="font:700 14px/1.2 Playfair Display,serif;color:#F0EDE6;display:block;margin-bottom:4px;">${item.title}</span><span style="font:400 14px/1 Raleway,sans-serif;color:rgba(240,237,230,0.45);">${item.type==='tv'?'Series':'Film'} · ${item.year}</span></div><span style="font:400 14px/1;color:#779F8A;flex:none;">★ ${item.rating}</span></div>`).join('') : '<p style="text-align:center;color:rgba(240,237,230,0.35);padding:32px 0;font:400 14px/1.5 Raleway,sans-serif;">No results found</p>';
+    list.querySelectorAll('[data-bs-idx]').forEach(el => { const idx=parseInt(el.dataset.bsIdx); if(results[idx]) el.addEventListener('click',()=>selectMedia(results[idx])); });
+  } catch(e) { if (list) list.innerHTML = '<p style="text-align:center;color:rgba(240,237,230,0.35);padding:32px 0;font:400 14px/1.5 Raleway,sans-serif;">No results found</p>'; }
+}
+
+function renderSearchResults(results, container) {
+  if (!container) return;
+  container.innerHTML = results.length ? results.map((item,i)=>`<div style="display:flex;gap:12px;align-items:center;padding:12px 24px;border-bottom:1px solid rgba(240,237,230,0.06);cursor:pointer;" data-sr="${i}">${item.posterUrl?`<img src="${item.posterUrl}" style="flex:none;width:44px;height:64px;border-radius:8px;object-fit:cover;" alt="">`:'<div style="flex:none;width:44px;height:64px;border-radius:8px;background:#252D29;"></div>'}<div style="flex:1;"><span style="font:700 16px/1.1 'Playfair Display',serif;color:#F0EDE6;display:block;margin-bottom:4px;">${item.title}</span><span style="font:400 14px/1 Raleway,sans-serif;color:rgba(240,237,230,0.5);">${item.year} · ${item.type==='tv'?'Series':'Film'}</span></div><span style="color:rgba(240,237,230,0.3);font:300 20px/1 Raleway;">›</span></div>`).join('') : '<p style="text-align:center;color:rgba(240,237,230,0.35);padding:40px 24px;font:400 14px/1.5 Raleway,sans-serif;">No results found</p>';
+  container.querySelectorAll('[data-sr]').forEach(el => {
+    const idx = parseInt(el.dataset.sr);
+    el.addEventListener('click', () => { hideSearch(); selectMedia(results[idx], state.searchContext); });
+  });
+}
+
+// ─── Detail screen ────────────────────────────────────
+function updateDetailScreen(item) {
+  const $ = id => document.getElementById(id);
+  if ($('detail-backdrop') && item.backdropUrl) $('detail-backdrop').style.backgroundImage = 'url('+item.backdropUrl+')';
+  if ($('detail-title')) $('detail-title').textContent = item.title||'';
+  if ($('detail-year')) $('detail-year').textContent = item.year||'';
+  if ($('detail-type')) $('detail-type').textContent = item.type==='tv'?'Series':'Film';
+  if ($('detail-rating')) $('detail-rating').textContent = '★ '+(item.rating||'');
+  if ($('detail-overview')) $('detail-overview').textContent = item.overview||'';
+  if ($('detail-genres')) {
+    const genres = item.genres||(item.genreIds||[]).slice(0,3).map(id=>genreName(id));
+    $('detail-genres').innerHTML = genres.slice(0,3).map(g=>`<span style="height:24px;padding:0 10px;border-radius:6px;background:rgba(92,122,106,0.18);display:inline-flex;align-items:center;font:500 12px/1 Raleway,sans-serif;color:#779F8A;letter-spacing:0.08em;text-transform:uppercase;">${g}</span>`).join('');
+  }
+  if ($('detail-cast')&&item.cast) $('detail-cast').innerHTML = item.cast.map(c=>`<div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex:none;"><div style="width:46px;height:46px;border-radius:50%;background:#252D29;border:1px solid rgba(240,237,230,0.08);display:flex;align-items:center;justify-content:center;"><span style="font:600 14px/1 Raleway,sans-serif;color:rgba(240,237,230,0.6);">${c.initials}</span></div><span style="font:400 14px/1.2 Raleway,sans-serif;color:rgba(240,237,230,0.5);text-align:center;max-width:56px;">${c.name.split(' ')[0]}</span></div>`).join('');
+  if ($('detail-streaming')) {
+    if (item.streaming&&item.streaming.length) $('detail-streaming').innerHTML = item.streaming.map(s=>`<div style="height:36px;padding:0 12px;border-radius:10px;background:#252D29;border:1px solid rgba(240,237,230,0.08);display:flex;align-items:center;gap:7px;">${s.logo?`<img src="${s.logo}" style="width:18px;height:18px;border-radius:3px;object-fit:cover;" alt="">`:''}  <span style="font:500 12px/1 Raleway,sans-serif;color:rgba(240,237,230,0.7);">${s.name}</span></div>`).join('');
+    else if (item.streaming) $('detail-streaming').innerHTML = '<span style="font:400 14px/1 Raleway,sans-serif;color:rgba(240,237,230,0.4);">Not available in your region</span>';
+  }
+  const seriesSection = $('detail-series-section');
+  if (seriesSection) seriesSection.style.display = item.type==='tv'?'block':'none';
+  if (item.type==='tv'&&item.seasons&&$('season-tabs')) $('season-tabs').innerHTML = item.seasons.map(s=>`<div data-season="${s.season_number}" style="flex:none;padding:6px 14px;border-radius:999px;background:${s.season_number===1?'#5C7A6A':'#252D29'};border:1px solid ${s.season_number===1?'transparent':'rgba(240,237,230,0.08)'};cursor:pointer;"><span style="font:500 12px/1 Raleway,sans-serif;color:${s.season_number===1?'#F0EDE8':'rgba(240,237,230,0.6)'};">S${s.season_number}</span></div>`).join('');
+}
+
+function updateJScreen(item) {
+  const $ = id => document.getElementById(id);
+  if (item.posterUrl) { const img=$('j-poster');const ph=$('j-poster-placeholder'); if(img){img.src=item.posterUrl;img.style.display='block';} if(ph)ph.style.display='none'; }
+  if ($('j-title')) $('j-title').textContent = item.title||'';
+  if ($('j-year')) $('j-year').textContent = (item.year||'')+(item.year?' · ':'')+( item.type==='tv'?'Series':'Film');
+  const descEl = $('j-desc');
+  if (descEl && item.overview) {
+    descEl.textContent = item.overview;
+    descEl.style.display = '-webkit-box';
+    descEl.style.webkitLineClamp = '2';
+    descEl.style.webkitBoxOrient = 'vertical';
+    descEl.style.overflow = 'hidden';
+  } else if (descEl) { descEl.style.display = 'none'; }
+}
+
+function renderEpisodes(episodes) {
+  const container = document.getElementById('episodes-list');
+  if (!container) return;
+  container.innerHTML = episodes.map(ep=>`<div data-open-ep="${ep.id}" data-ep-num="${ep.number}" data-ep-overview="${encodeURIComponent(ep.overview||'')}" style="display:flex;gap:10px;align-items:flex-start;padding:14px 0;border-bottom:1px solid rgba(240,237,230,0.06);cursor:pointer;">${ep.stillUrl?`<img src="${ep.stillUrl}" style="flex:none;width:80px;height:50px;border-radius:8px;object-fit:cover;" alt="">`:'<div style="flex:none;width:80px;height:50px;border-radius:8px;background:#1C2120;"></div>'}<div style="flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><span style="font:600 14px/1.2 Raleway,sans-serif;color:#F0EDE6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">E${ep.number} · ${ep.name}</span><div style="flex:none;width:28px;height:28px;border-radius:50%;background:#252D29;border:1px solid rgba(240,237,230,0.1);display:flex;align-items:center;justify-content:center;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2L9.8 6.2L14 6.6L11 9.3L12 13.5L8 11.2L4 13.5L5 9.3L2 6.6L6.2 6.2Z" stroke="rgba(240,237,230,0.55)" stroke-width="1.4" stroke-linejoin="round"></path></svg></div></div><span style="font:400 14px/1.3 Raleway,sans-serif;color:rgba(240,237,230,0.4);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${ep.overview||''}</span>${ep.runtime?`<span style="font:400 14px/1 Raleway,sans-serif;color:rgba(240,237,230,0.3);">${ep.runtime}m</span>`:''}</div></div>`).join('');
+}
+
+// ─── Seed posters ─────────────────────────────────────
+async function loadSeedPosters() {
+  if (!TMDB_KEY) return;
+  await Promise.all(SEED_TITLES.map(async title => {
+    try {
+      const resp = await fetch(TMDB_BASE+'/search/multi?api_key='+TMDB_KEY+'&query='+encodeURIComponent(title)+'&language=en-US');
+      const data = await resp.json();
+      const result = (data.results||[]).find(r=>r.poster_path);
+      if (result) {
+        const url = TMDB_IMG + result.poster_path;
+        const img = document.querySelector('img[data-seed-title="'+title+'"]');
+        if (img) { img.src = url; img.style.opacity = '1'; const ph = img.nextElementSibling; if (ph&&ph.classList.contains('seed-placeholder')) ph.style.display = 'none'; }
+      }
+    } catch(e) {}
+  }));
+}
+
+// ─── Seed toggle ──────────────────────────────────────
+function toggleSeedPoster(el) {
+  const isSelected = el.hasAttribute('data-selected');
+  const check = el.querySelector('.seed-check');
+  const ring = el.querySelector('.seed-ring');
+  if (isSelected) { el.removeAttribute('data-selected'); if(check)check.style.display='none'; if(ring)ring.style.display='none'; }
+  else {
+    const selected = document.querySelectorAll('[data-seed][data-selected]');
+    if (selected.length >= 3) { const first=selected[0]; first.removeAttribute('data-selected'); const fc=first.querySelector('.seed-check');if(fc)fc.style.display='none'; const fr=first.querySelector('.seed-ring');if(fr)fr.style.display='none'; }
+    el.setAttribute('data-selected','');
+    if(check)check.style.display='flex';
+    if(ring)ring.style.display='block';
+  }
+}
+
+// ─── Country list ────────────────────────────────────
+const ALL_COUNTRIES = ['Germany','Austria','Switzerland','United Kingdom','United States','France','Netherlands','Italy','Spain','Belgium','Denmark','Sweden','Norway','Finland','Poland','Portugal','Ireland','Australia','Canada','Japan','South Korea','Brazil','Mexico','Argentina','India'];
+let selectedCountry = null;
+
+function buildCountryList(filter) {
+  const container = document.getElementById('country-list');
+  if (!container) return;
+  const q = (filter||'').toLowerCase();
+  const filtered = ALL_COUNTRIES.filter(c => c.toLowerCase().includes(q));
+  if (!filtered.length) { container.innerHTML = '<p style="text-align:center;color:rgba(240,237,230,0.35);padding:32px 0;font:400 14px/1.5 Raleway,sans-serif;">No results found</p>'; return; }
+  container.innerHTML = filtered.map((c,i) => {
+    const isSelected = c === selectedCountry;
+    return `<div data-country-item="${c}" style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:${i<filtered.length-1?'1px solid rgba(240,237,230,0.06)':'none'};cursor:pointer;">`
+      + `<span style="font:${isSelected?'600':'400'} 15px/1 'Raleway',sans-serif;color:${isSelected?'#F0EDE6':'rgba(240,237,230,0.7)'}">${c}</span>`
+      + (isSelected ? `<div style="width:20px;height:20px;border-radius:50%;background:#5C7A6A;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="10" height="7" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#F0EDE8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>` : '')
+      + `</div>`;
+  }).join('');
+  // wire up clicks
+  container.querySelectorAll('[data-country-item]').forEach(el => {
+    el.addEventListener('click', () => {
+      // tap same country again → deselect
+      if (selectedCountry === el.dataset.countryItem) {
+        selectedCountry = null;
+      } else {
+        selectedCountry = el.dataset.countryItem;
+      }
+      buildCountryList(document.getElementById('country-search')?.value || '');
+      updateContinueBtn();
+    });
+  });
+}
+
+function updateContinueBtn() {
+  const btn = document.getElementById('country-continue');
+  if (!btn) return;
+  if (selectedCountry) {
+    btn.style.background = 'linear-gradient(155deg,#5C7A6A 0%,#3E5C4A 100%)';
+    btn.style.cursor = 'pointer';
+    btn.querySelector('span').style.color = '#F0EDE8';
+    btn.onclick = () => navigate('d');
+  } else {
+    btn.style.background = 'rgba(92,122,106,0.25)';
+    btn.style.cursor = 'default';
+    btn.querySelector('span').style.color = 'rgba(240,237,230,0.3)';
+    btn.onclick = null;
+  }
+}
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'country-search') buildCountryList(e.target.value);
+});
+
+function toggleService(el) {
+  const isActive = el.dataset.serviceActive === 'true';
+  const nowActive = !isActive;
+  el.dataset.serviceActive = nowActive ? 'true' : 'false';
+  el.style.background = nowActive ? '#5C7A6A' : '#252D29';
+  el.style.border = nowActive ? '1px solid transparent' : '1px solid rgba(240,237,230,0.07)';
+  // always keep name centred — just colour changes
+  el.querySelectorAll('span').forEach(s => {
+    s.style.color = nowActive ? '#F0EDE8' : 'rgba(240,237,230,0.55)';
+    s.style.fontWeight = nowActive ? '600' : '500';
+  });
+  // small tick badge in top-right corner so name stays centred
+  let tick = el.querySelector('.svc-tick');
+  if (nowActive && !tick) {
+    tick = document.createElement('div');
+    tick.className = 'svc-tick';
+    tick.style.cssText = 'position:absolute;top:6px;right:7px;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;';
+    tick.innerHTML = '<svg width="7" height="5" viewBox="0 0 7 5" fill="none"><path d="M1 2.5L2.8 4.3L6 1" stroke="#F0EDE8" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+    el.style.position = 'relative';
+    el.appendChild(tick);
+  } else if (!nowActive && tick) {
+    tick.remove();
+  }
+}
+
+// ─── Helpers ──────────────────────────────────────────
+function mapItem(item, type) {
+  return {id:item.id,title:item.title||item.name||'',posterUrl:item.poster_path?TMDB_IMG+item.poster_path:'',backdropUrl:item.backdrop_path?TMDB_BACK+item.backdrop_path:'',rating:item.vote_average?parseFloat(item.vote_average).toFixed(1):'?',year:(item.release_date||item.first_air_date||'').slice(0,4),type:type||item.media_type||'movie',overview:item.overview||'',genreIds:item.genre_ids||[]};
+}
+
+function genreName(id) {
+  return {28:'Action',12:'Adventure',16:'Animation',35:'Comedy',80:'Crime',18:'Drama',10751:'Family',14:'Fantasy',27:'Horror',9648:'Mystery',10749:'Romance',878:'Sci-Fi',53:'Thriller',10759:'Action & Adventure',10765:'Sci-Fi & Fantasy'}[id]||'Drama';
+}
+
+function staticShortlist() {
+  return [{id:94997,title:'House of the Dragon',posterUrl:'',backdropUrl:'',rating:'8.4',year:'2022',type:'tv',overview:'The story of House Targaryen.',genreIds:[10765,18,12]},{id:1396,title:'Breaking Bad',posterUrl:'',backdropUrl:'',rating:'9.5',year:'2008',type:'tv',overview:'A chemistry teacher turns to crime.',genreIds:[18,80]},{id:693134,title:'Dune: Part Two',posterUrl:'',backdropUrl:'',rating:'8.5',year:'2024',type:'movie',overview:'Paul Atreides unites with the Fremen.',genreIds:[878,12]},{id:466420,title:'Killers of the Flower Moon',posterUrl:'',backdropUrl:'',rating:'7.6',year:'2023',type:'movie',overview:'Osage Nation members are murdered.',genreIds:[80,18,36]},{id:37854,title:'One Piece',posterUrl:'',backdropUrl:'',rating:'8.7',year:'1999',type:'tv',overview:"Monkey D. Luffy's adventures.",genreIds:[10759,16,12]},{id:496243,title:'Parasite',posterUrl:'',backdropUrl:'',rating:'8.5',year:'2019',type:'movie',overview:'Two families from opposite ends of society become entangled.',genreIds:[53,35,18]}];
+}
+
+// ─── Watchlist store ─────────────────────────────────
+let watchlistItems = [];
+
+function addToWatchlist(item) {
+  if (!watchlistItems.find(i => i.id === item.id)) watchlistItems.push(item);
+  renderWatchlist();
+}
+
+function removeFromWatchlist(id) {
+  watchlistItems = watchlistItems.filter(i => i.id !== id);
+  renderWatchlist();
+}
+
+function renderWatchlist() {
+  const empty = document.getElementById('watchlist-empty');
+  const filled = document.getElementById('watchlist-filled');
+  if (!empty || !filled) return;
+  if (!watchlistItems.length) {
+    empty.style.display = 'flex'; filled.style.display = 'none'; return;
+  }
+  empty.style.display = 'none'; filled.style.display = 'flex';
+  filled.innerHTML = watchlistItems.map(item => `
+    <div style="display:flex;gap:12px;align-items:center;background:#252D29;border:1px solid rgba(240,237,230,0.06);border-radius:14px;padding:12px;cursor:pointer;" data-wl-id="${item.id}">
+      ${item.posterUrl ? `<img src="${item.posterUrl}" style="flex:none;width:52px;height:76px;border-radius:8px;object-fit:cover;" alt="">` : '<div style="flex:none;width:52px;height:76px;border-radius:8px;background:#1C2120;"></div>'}
+      <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+        <span style="font:700 16px/1.1 \'Playfair Display\',serif;color:#F0EDE6;">${item.title}</span>
+        <span style="font:400 14px/1 Raleway,sans-serif;color:rgba(240,237,230,0.5);">${item.year} · ${item.type === 'tv' ? 'Series' : 'Film'}</span>
+        <span style="font:400 14px/1;color:#779F8A;">★ ${item.rating}</span>
+      </div>
+      <svg width="16" height="18" viewBox="0 0 14 16" fill="#5C7A6A"><path d="M2 2H12V15L7 11L2 15V2Z"></path></svg>
+    </div>`).join('');
+  filled.querySelectorAll('[data-wl-id]').forEach(el => {
+    el.addEventListener('click', () => {
+      const item = watchlistItems.find(i => String(i.id) === el.dataset.wlId);
+      if (item) selectMedia(item);
+    });
+  });
+}
+
+function staticTrending() {
+  return [
+    {id:202555,title:'Adolescence',posterUrl:'',backdropUrl:'',rating:'8.9',year:'2025',type:'tv',overview:'A 13-year-old is arrested for murder.',genreIds:[18]},
+    {id:519182,title:'The Brutalist',posterUrl:'',backdropUrl:'',rating:'7.8',year:'2024',type:'movie',overview:'An architect builds a new life in America.',genreIds:[18]},
+    {id:67178,title:'Severance',posterUrl:'',backdropUrl:'',rating:'8.7',year:'2022',type:'tv',overview:'Employees have their memories divided at work.',genreIds:[878,53]},
+    {id:100088,title:'The Last of Us',posterUrl:'',backdropUrl:'',rating:'8.8',year:'2023',type:'tv',overview:'A smuggler transports a teenager across a post-apocalyptic US.',genreIds:[18,27,28]},
+    {id:496243,title:'Parasite',posterUrl:'',backdropUrl:'',rating:'8.5',year:'2019',type:'movie',overview:'Greed and class discrimination threaten a poor family.',genreIds:[53,35,18]},
+    {id:94605,title:'Arcane',posterUrl:'',backdropUrl:'',rating:'9.0',year:'2021',type:'tv',overview:'A war between two cities drives sisters apart.',genreIds:[16,10759,878]},
+    {id:27205,title:'Inception',posterUrl:'',backdropUrl:'',rating:'8.4',year:'2010',type:'movie',overview:'A thief enters the architecture of dreams.',genreIds:[28,12,878]},
+    {id:1396,title:'Breaking Bad',posterUrl:'',backdropUrl:'',rating:'9.5',year:'2008',type:'tv',overview:'A chemistry teacher becomes a drug kingpin.',genreIds:[18,80]},
+    {id:157336,title:'Interstellar',posterUrl:'',backdropUrl:'',rating:'8.3',year:'2014',type:'movie',overview:'A team travels through a wormhole to save humanity.',genreIds:[12,18,878]},
+    {id:569094,title:'Spider-Man: Across the Spider-Verse',posterUrl:'',backdropUrl:'',rating:'8.6',year:'2023',type:'movie',overview:'Miles Morales leaps across the Multiverse.',genreIds:[16,28,12]}
+  ];
+}
+
+// ─── Disclaimer ripple + transition ───────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('start-btn');
+  if (!btn) return;
+  btn.addEventListener('click', e => {
+    const s0 = document.getElementById('s-0');
+    // subtle button press feedback
+    btn.style.transition = 'transform 0.1s ease, border-color 0.1s ease';
+    btn.style.transform = 'scale(0.96)';
+    btn.style.borderColor = 'rgba(92,122,106,0.9)';
+    setTimeout(() => { btn.style.transform = ''; }, 120);
+    // fade to black then navigate
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:absolute;inset:0;background:#1C2120;opacity:0;z-index:99;pointer-events:none;transition:opacity 0.35s ease;';
+    document.getElementById('sera-app').appendChild(overlay);
+    requestAnimationFrame(() => requestAnimationFrame(() => overlay.style.opacity = '1'));
+    setTimeout(() => { navigate('a'); overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 350); }, 380);
+  });
+});
+
+// ─── Lock height (prevents jump when mobile browser bar shows/hides) ──
+function lockHeight() {
+  const app = document.getElementById('sera-app');
+  if (app) app.style.height = window.innerHeight + 'px';
+}
+lockHeight();
+window.addEventListener('resize', lockHeight);
+
+// ─── Init ─────────────────────────────────────────────
+buildSeedGrid();
+buildCountryList();
+updateContinueBtn();
+document.getElementById('browse-search').addEventListener('focus', () => {
+  document.getElementById('browse-discover').style.display = 'none';
+  document.getElementById('browse-search-mode').style.display = 'flex';
+});
+document.getElementById('browse-search').addEventListener('blur', e => {
+  if (!e.target.value.trim()) {
+    document.getElementById('browse-discover').style.display = '';
+    document.getElementById('browse-search-mode').style.display = 'none';
+  }
+});
+
+showScreen('0');
+loadSeedPosters();
+loadTrending();
+loadProfileRated();
+loadDemoWatchlist();
+loadFriendBackdrops();
+</script>
+</body>
+</html>
+
+<style id="__om-edit-overrides">
+</style>
